@@ -1,3 +1,5 @@
 .idea/
 Data/
 spinningup/
+temp.*
+__pycache__/
