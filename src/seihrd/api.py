@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket
-from base_models import a2i
-from divoc_env import DivocEnv
+from seihrd.base_models import a2i
+from seihrd.divoc_env import DivocEnv
 
 
 app = FastAPI()

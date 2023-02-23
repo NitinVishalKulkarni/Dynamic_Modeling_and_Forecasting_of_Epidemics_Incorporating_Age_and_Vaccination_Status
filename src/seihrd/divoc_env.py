@@ -1,4 +1,4 @@
-from base_models import (
+from seihrd.base_models import (
     State,
     Populations,
     SubCompartmentPopulations,
