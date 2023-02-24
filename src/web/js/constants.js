@@ -1,20 +1,22 @@
 consts = {
-    websocket_url: "ws://localhost:8000/ws/divoc",
+    websocket_url: "ws://localhost:8000/ws",
     step_interval: 1000,
 }
 
-index_to_actions = {
-    0: 'noop',
-    1: 'vaccine',
-    2: 'mask',
-    3: 'action_3',  // TODO: Fill out the actions.
+Actions = {
+    noop: 'noop',
+    social_distancing: 'social_distancing',
+    vaccine: 'vaccine',
+    mask: 'mask',
+    lockdown: 'lockdown',
 }
-action_to_index = {
-    'noop': 0,
-    'vaccine': 0,
-    'mask': 0,
-    'action_3': 0,
-}
+index_to_actions = [
+    Actions.social_distancing,
+    Actions.lockdown,
+    Actions.mask,
+    Actions.vaccine,
+]
+action_to_index = index_to_actions.map((a, index) => index)
 
 _sub_compartment_populations = {uv: 0, fv: 0, b: 0}
 _sub_compartment_preds = {vfv: 0.0, vb: 0.0}
@@ -45,16 +47,24 @@ default_state = {
         e2_r: 0.0,
     },
     action_residue: {
+        social_distancing: 0,
+        lockdown: 0,
         vaccine: 0,
         mask: 0,
-        action_3: 0,  // TODO: Fill out the actions
     },
     epp: 1.0,
     hyper_params: {
         action_durations: {  // in days
-            vaccine: 14,
+            social_distancing: 100,
+            lockdown: 10,
+            vaccine: 50,
             mask: 150,
-            // TODO: Fill this out.
+        },
+        action_cool_downs: {
+            social_distancing: 30,
+            lockdown: 10,
+            vaccine: 100,
+            mask: 30,
         },
         max_steps: 365,
     },

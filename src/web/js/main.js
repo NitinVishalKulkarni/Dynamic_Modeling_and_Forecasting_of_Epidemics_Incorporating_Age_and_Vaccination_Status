@@ -19,7 +19,7 @@ class Divoc {
         if (this.ws?.readyState === WebSocket.OPEN){
             this.ws.send(JSON.stringify({
                 type: 'step',
-                action: index_to_actions[0],
+                action: [0,0,1,0],
                 // prev_state: this.state,
             }))
         }

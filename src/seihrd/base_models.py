@@ -4,24 +4,25 @@ from pydantic import BaseModel
 
 class A:
     noop = 'noop'
+    social_distancing = 'social_distancing'
     vaccine = 'vaccine'
     mask = 'mask'
     lockdown = 'lockdown'
-    social_distancing = 'social_distancing'
 
 
 i2a = [
-    A.noop,
-    A.vaccine,
-    A.mask,
-    A.lockdown,
+    # A.noop,
     A.social_distancing,
+    A.lockdown,
+    A.mask,
+    A.vaccine,
 ]
 a2i = {a: i for i, a in enumerate(i2a)}
 
 
 class SimHyperParams(BaseModel):
     action_durations: Mapping[str, int]
+    action_cool_downs: Mapping[str, int]
     max_steps: int
     initial_population: int = 1000
 

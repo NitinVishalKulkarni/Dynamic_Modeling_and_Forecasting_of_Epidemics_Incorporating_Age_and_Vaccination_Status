@@ -1,16 +1,16 @@
 from fastapi import FastAPI, WebSocket
 from seihrd.base_models import a2i
-from seihrd.divoc_env import DivocEnv
+from seihrd.seihrd_env import SeihrdEnv
 
 
 app = FastAPI()
 
 
-@app.websocket_route("/ws/divoc")
+@app.websocket_route("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print('accepted')
-    env = DivocEnv()
+    env = SeihrdEnv()
     env.reset()
     await websocket.send_json({
         'type': 'next_state',
@@ -19,7 +19,7 @@ async def websocket_endpoint(websocket: WebSocket):
     })
     while True:
         data = await websocket.receive_json()
-        action = a2i[data['action']]
+        action = data['action']
         env.step(action)
         await websocket.send_json({
             'type': 'next_state',
