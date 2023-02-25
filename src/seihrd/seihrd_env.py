@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from typing import Sequence
 import numpy as np
 from gymnasium.envs.registration import EnvSpec
@@ -8,10 +7,11 @@ from seihrd.base_models import (
     SubCompPopulations,
     Params,
     SimHyperParams,
-    A, SubCompParams,
+    A, SubCompParams, i2a,
 )
 from random import random
 import gymnasium as gym
+from seihrd.transitions.action_mask_transitions import ActionMaskTransitions
 from seihrd.transitions.action_transitions import ActionTransitions
 from seihrd.transitions.population_transitions import PopulationTransitions
 from seihrd.transitions.seasonal_transitions import SeasonalTransitions
@@ -21,7 +21,7 @@ class SeihrdEnv(gym.Env):
     metadata = {'render.modes': ['ansi', 'human']}
     reward_range = (-np.inf, np.inf)
     action_space = gym.spaces.MultiDiscrete([1, 1, 1, 1])
-    observation_space = gym.spaces.Discrete(1)
+    observation_space = gym.spaces.Discrete(24)
 
     spec = EnvSpec(
         id='seihrd-v0',
@@ -35,38 +35,45 @@ class SeihrdEnv(gym.Env):
         self.action_transitions = ActionTransitions()
         self.seasonal_transitions = SeasonalTransitions()
         self.population_transitions = PopulationTransitions()
+        self.action_mask_transitions = ActionMaskTransitions()
 
         self.action_mask = np.zeros(4)
 
     def step(self, action: Sequence[int]):
-        self.state = self.action_transitions(self.state, action)
-        self.state = self.seasonal_transitions(self.state)
+        # self.state = self.action_transitions(self.state, action)
+        # self.state = self.seasonal_transitions(self.state)
         self.state = self.population_transitions(self.state)
+        self.state = self.action_mask_transitions(self.state)
 
         self.state.step_count += 1
         self.state.is_done = self.state.step_count >= self.state.hyper_parameters.max_steps
 
-        # TODO: Update action_mask
         # TODO: Reward computation
-        # TODO: Observation from state
-
-        # Just for visualization, add noise to params
-        from dataclasses import fields
-        for prob_key in fields(Params):
-            noise = (random() - 0.5) * 0.05
-            prob = getattr(self.state.params, prob_key.name) + noise
-            prob = max(0, prob)
-            prob = min(1, prob)
-            setattr(self.state.params, prob_key.name, prob)
 
         # Just for visualization, add noise to epp
         self.state.epp += (random() - 0.5) * 0.01
 
-    def reset(self):
+        return self.observe(), 0, self.state.is_done, self.state.is_done, {'action_mask': [1, 1, 1, 1]}
+
+    def reset(self, *_args, **_kwargs) -> (np.array, dict):
         self.__init__()
+        return self.observe(), {}
+
+    def observe(self):
+        populations = self.state.populations.to_list()
+        populations = np.array(populations).flatten() / self.state.populations.total()
+
+        in_affect = [self.state.action_in_effect[a] / self.state.hyper_parameters.action_durations[a] for a in i2a]
+        progress = self.state.step_count / self.state.hyper_parameters.max_steps
+
+        obs = np.concatenate((populations, in_affect, [progress, self.state.epp]))
+        return obs
+
+    def render(self):
+        pass
 
     def get_state_dict(self):
-        return asdict(self.state)
+        return self.state.dict()
 
     @staticmethod
     def get_initial_state():
@@ -100,10 +107,10 @@ class SeihrdEnv(gym.Env):
                 h_d=SubCompParams(uv=random(), fv=random(), b=random()),
                 e_r=SubCompParams(uv=random(), fv=random(), b=random()),
             ),
-            action_residue={'vaccine': 1, 'mask': 0},
+            action_in_effect={a: 0 for a in i2a},
             epp=1.0,
             hyper_parameters=hp,
-            action_mask={'noop': 1, 'vaccine': 0, 'mask': 1},
+            action_mask={a: 1 for a in i2a},
             step_count=0,
             is_done=False,
         )
@@ -111,4 +118,4 @@ class SeihrdEnv(gym.Env):
 
 
 if __name__ == '__main__':
-    print(SeihrdEnv().state.populations['susceptible'])
+    print(SeihrdEnv().observation().shape)
