@@ -3,14 +3,16 @@ from seihrd.base_models import A, i2a
 
 class ActionTransitions:
     """
-    This will take the current probs and the action and returns the updated probs based on the action.
+    This will take the current params and the action and returns the updated params based on the action.
     """
 
     def __init__(self):
         """
         Let's say this is a simple multiplier of e1_i and e2_i.
         Next, we can add vaccination multiplier for vaccination action.
-
+        TODO: Add action's impact on epp
+        TODO: Update the action residue
+        TODO: set invalid actions to 0
         """
         self.infection_multiplier = {
             A.social_distancing: 1.01,
@@ -27,7 +29,7 @@ class ActionTransitions:
             if action[i]:
                 multiplier *= self.infection_multiplier[a]
 
-        state.probs.e1_i *= multiplier
-        state.probs.e2_i *= multiplier
+        state.params.e1_i *= multiplier
+        state.params.e2_i *= multiplier
 
         return state

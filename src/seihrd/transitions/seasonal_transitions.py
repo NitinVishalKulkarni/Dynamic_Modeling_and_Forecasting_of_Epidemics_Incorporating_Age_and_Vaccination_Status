@@ -1,7 +1,7 @@
 
 class SeasonalTransitions:
     """
-    This will take the current probs and the current timestep and returns the updated probs based on the timestep.
+    This will take the current params and the current timestep and returns the updated params based on the timestep.
     """
 
     def __init__(self):
@@ -21,7 +21,7 @@ class SeasonalTransitions:
 
             multiplier = self.multiplier[state.step_count]
 
-            state.probs.e1_i *= multiplier
-            state.probs.e2_i *= multiplier
+            state.params.e1_i *= multiplier
+            state.params.e2_i *= multiplier
 
         return state

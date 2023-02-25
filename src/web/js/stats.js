@@ -182,7 +182,7 @@ class Stats {
             }
         })
 
-        // Probs Chart
+        // Params Chart
         let probs = [
             'vfv',
             'vb',
@@ -243,7 +243,7 @@ class Stats {
                     yAxes: [{
                         scaleLabel: {
                             display: true,
-                            labelString: 'Probs'
+                            labelString: 'Params'
                         }
                     }],
                     xAxes: [{
