@@ -1,6 +1,6 @@
-from dataclasses import dataclass, fields
 from typing import Mapping
 from numpy.random import normal
+from pydantic import BaseModel
 
 
 class A:
@@ -29,16 +29,14 @@ class DictLike:
         setattr(self, field, value)
 
 
-@dataclass
-class SimHyperParams:
+class SimHyperParams(BaseModel):
     action_durations: Mapping[str, int]
     action_cool_downs: Mapping[str, int]
     max_steps: int
     initial_population: int = 1000
 
 
-@dataclass
-class SubCompPopulations(DictLike):
+class SubCompPopulations(BaseModel, DictLike):
     uv: int = 0
     fv: int = 0
     b: int = 0
@@ -47,8 +45,7 @@ class SubCompPopulations(DictLike):
         return self.uv + self.fv + self.b
 
 
-@dataclass
-class Populations(DictLike):
+class Populations(BaseModel, DictLike):
     susceptible: SubCompPopulations
     exposed: SubCompPopulations
     infected: SubCompPopulations
@@ -57,18 +54,20 @@ class Populations(DictLike):
     deceased: SubCompPopulations
 
     def total(self):
-        return sum([self[c.name].total() for c in fields(self)])
+        return sum([self[c].total() for c in self.__fields__])
 
     def vax(self, comp: str):
-        return sum([self[field.name][comp] for field in fields(self)])
+        return sum([self[field][comp] for field in self.__fields__])
+
+    def to_list(self):
+        return [[self[f].uv, self[f].fv, self[f].b] for f in self.__fields__]
 
 
 def noisy(param):
     return normal(param, param * 0.05, 1)
 
 
-@dataclass
-class SubCompParams:
+class SubCompParams(BaseModel, DictLike):
     uv: float = 0
     fv: float = 0
     b: float = 0
@@ -79,8 +78,7 @@ class SubCompParams:
         self.b = noisy(self.b)
 
 
-@dataclass
-class Params:
+class Params(BaseModel, DictLike):
     vfv: float
     vb: float
     alpha: float
@@ -96,19 +94,17 @@ class Params:
     e_r: SubCompParams
 
     def noisy(self):
-        for f in fields(self):
-            field = getattr(self, f.name)
-            if isinstance(field, SubCompParams):
-                field.noisy()
+        for f in self.__fields__:
+            if isinstance(self[f], SubCompParams):
+                self[f].noisy()
             else:
-                setattr(self, f.name, noisy(field))
+                self[f] = noisy(self[f])
 
 
-@dataclass
-class State:
+class State(BaseModel):
     populations: Populations
     params: Params
-    action_residue: Mapping[str, int]
+    action_in_effect: Mapping[str, int]
     epp: float
     hyper_parameters: SimHyperParams
     action_mask: Mapping[str, int]

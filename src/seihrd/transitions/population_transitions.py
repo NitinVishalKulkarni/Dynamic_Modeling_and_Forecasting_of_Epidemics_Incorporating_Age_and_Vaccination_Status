@@ -1,12 +1,11 @@
-from copy import deepcopy
 from seihrd.base_models import SubCompPopulations, State
 
 
 class PopulationTransitions:
     def __call__(self, state: State):
-        s = deepcopy(state)
-        po = deepcopy(s.populations)
-        pa = deepcopy(s.params)
+        s = state.copy(deep=True)
+        po = s.populations.copy(deep=True)
+        pa = s.params.copy(deep=True)
         pa.noisy()
 
         i = (po.infected.total() ** pa.alpha) / po.total()
