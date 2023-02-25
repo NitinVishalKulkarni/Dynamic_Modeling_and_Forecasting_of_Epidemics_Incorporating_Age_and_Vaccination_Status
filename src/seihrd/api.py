@@ -1,5 +1,4 @@
 from fastapi import FastAPI, WebSocket
-from seihrd.base_models import a2i
 from seihrd.seihrd_env import SeihrdEnv
 
 

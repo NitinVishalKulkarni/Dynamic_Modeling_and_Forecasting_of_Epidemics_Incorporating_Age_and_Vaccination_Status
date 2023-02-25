@@ -16,10 +16,11 @@ class SeasonalTransitions:
         }
 
     def __call__(self, state):
-        if state.step_count in self.multiplier:
+        # TODO: Implement seasonal transitions.
+        if state.time_step in self.multiplier:
             state = state.copy(deep=True)
 
-            multiplier = self.multiplier[state.step_count]
+            multiplier = self.multiplier[state.time_step]
 
             state.params.e1_i *= multiplier
             state.params.e2_i *= multiplier

@@ -7,11 +7,11 @@ from seihrd.base_models import (
     SubCompPopulations,
     Params,
     SimHyperParams,
-    A, SubCompParams, i2a,
+    SubCompParams,
+    i2a,
 )
 from random import random
 import gymnasium as gym
-from seihrd.transitions.action_mask_transitions import ActionMaskTransitions
 from seihrd.transitions.action_transitions import ActionTransitions
 from seihrd.transitions.population_transitions import PopulationTransitions
 from seihrd.transitions.seasonal_transitions import SeasonalTransitions
@@ -35,25 +35,19 @@ class SeihrdEnv(gym.Env):
         self.action_transitions = ActionTransitions()
         self.seasonal_transitions = SeasonalTransitions()
         self.population_transitions = PopulationTransitions()
-        self.action_mask_transitions = ActionMaskTransitions()
-
-        self.action_mask = np.zeros(4)
 
     def step(self, action: Sequence[int]):
-        # self.state = self.action_transitions(self.state, action)
-        # self.state = self.seasonal_transitions(self.state)
-        self.state = self.population_transitions(self.state)
-        self.state = self.action_mask_transitions(self.state)
+        s = self.state
 
-        self.state.step_count += 1
-        self.state.is_done = self.state.step_count >= self.state.hyper_parameters.max_steps
+        s = self.action_transitions(s, action)
+        # s = self.seasonal_transitions(s)
+        s = self.population_transitions(s)
 
-        # TODO: Reward computation
+        s.time_step += 1
+        s.is_done = s.time_step >= s.hyper_parameters.max_steps
 
-        # Just for visualization, add noise to epp
-        self.state.epp += (random() - 0.5) * 0.01
-
-        return self.observe(), 0, self.state.is_done, self.state.is_done, {'action_mask': [1, 1, 1, 1]}
+        self.state = s
+        return self.observe(), 0, s.is_done, s.is_done, {'action_mask': s.action_mask}
 
     def reset(self, *_args, **_kwargs) -> (np.array, dict):
         self.__init__()
@@ -64,13 +58,20 @@ class SeihrdEnv(gym.Env):
         populations = np.array(populations).flatten() / self.state.populations.total()
 
         in_affect = [self.state.action_in_effect[a] / self.state.hyper_parameters.action_durations[a] for a in i2a]
-        progress = self.state.step_count / self.state.hyper_parameters.max_steps
+        progress = self.state.time_step / self.state.hyper_parameters.max_steps
 
         obs = np.concatenate((populations, in_affect, [progress, self.state.epp]))
         return obs
 
-    def render(self):
-        print(self.state.json(indent=4))
+    def render(self, mode='human'):
+        s = self.state.json(indent=4)
+        if mode == 'human':
+            print(s)
+        elif mode == 'ansi':
+            return s
+        else:
+            print(f'Render models can only be one of: {self.metadata["render.modes"]}')
+            self.render('human')
 
     def get_state_dict(self):
         return self.state.dict()
@@ -78,8 +79,8 @@ class SeihrdEnv(gym.Env):
     @staticmethod
     def get_initial_state():
         hp = SimHyperParams(
-            action_durations={A.vaccine: 14, A.mask: 150, A.lockdown: 14, A.social_distancing: 30},
-            action_cool_downs={A.vaccine: 14, A.mask: 150, A.lockdown: 14, A.social_distancing: 30},
+            action_durations=[14, 150, 14, 30],
+            action_cool_downs=[14, 150, 14, 30],
             max_steps=365,
             initial_population=1000,
         )
@@ -107,15 +108,17 @@ class SeihrdEnv(gym.Env):
                 h_d=SubCompParams(uv=random(), fv=random(), b=random()),
                 e_r=SubCompParams(uv=random(), fv=random(), b=random()),
             ),
-            action_in_effect={a: 0 for a in i2a},
             epp=1.0,
             hyper_parameters=hp,
-            action_mask={a: 1 for a in i2a},
-            step_count=0,
+            action_in_effect=[0, 0, 0, 0],
+            action_cool_down=[0, 0, 0, 0],
+            action_mask=[1, 1, 1, 1],
+            time_step=0,
             is_done=False,
         )
         return state
 
 
 if __name__ == '__main__':
-    print(SeihrdEnv().render())
+    env = SeihrdEnv()
+    print([f for f in env.state.populations.__fields__])

@@ -1,4 +1,4 @@
-from typing import Mapping
+from typing import Sequence
 from numpy.random import normal
 from pydantic import BaseModel
 
@@ -30,8 +30,8 @@ class DictLike:
 
 
 class SimHyperParams(BaseModel):
-    action_durations: Mapping[str, int]
-    action_cool_downs: Mapping[str, int]
+    action_durations: Sequence[int]
+    action_cool_downs: Sequence[int]
     max_steps: int
     initial_population: int = 1000
 
@@ -49,8 +49,8 @@ class Populations(BaseModel, DictLike):
     susceptible: SubCompPopulations
     exposed: SubCompPopulations
     infected: SubCompPopulations
-    recovered: SubCompPopulations
     hospitalized: SubCompPopulations
+    recovered: SubCompPopulations
     deceased: SubCompPopulations
 
     def total(self):
@@ -104,10 +104,11 @@ class Params(BaseModel, DictLike):
 class State(BaseModel):
     populations: Populations
     params: Params
-    action_in_effect: Mapping[str, int]
     epp: float
     hyper_parameters: SimHyperParams
-    action_mask: Mapping[str, int]
-    step_count: int
+    action_in_effect: Sequence[int]
+    action_cool_down: Sequence[int]
+    action_mask: Sequence[int]
+    time_step: int
     is_done: bool
 
