@@ -51,7 +51,7 @@ class SeihrdEnv(gym.Env):
 
     def reset(self, *_args, **_kwargs) -> (np.array, dict):
         self.__init__()
-        return self.observe(), {}
+        return self.observe(), {'action_mask': self.state.action_mask}
 
     def observe(self):
         populations = self.state.populations.to_list()

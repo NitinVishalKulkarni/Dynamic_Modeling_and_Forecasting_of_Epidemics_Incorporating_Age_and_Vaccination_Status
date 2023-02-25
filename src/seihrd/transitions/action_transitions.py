@@ -5,7 +5,7 @@ from seihrd.base_models import State, A, a2i
 
 class ActionTransitions:
     """
-    This will take the current params and the action and
+    This will take the current state and the action and
     returns the updated state based on the action.
     Specifically, it updates the following properties:
         1. params.beta
