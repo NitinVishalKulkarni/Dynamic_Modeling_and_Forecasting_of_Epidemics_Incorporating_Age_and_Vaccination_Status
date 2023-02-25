@@ -1,10 +1,5 @@
 from copy import deepcopy
-from seihrd.base_models import (
-    Populations,
-    SubCompPopulations,
-    State,
-)
-from random import random
+from seihrd.base_models import SubCompPopulations, State
 
 
 class PopulationTransitions:
