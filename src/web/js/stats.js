@@ -182,93 +182,93 @@ class Stats {
             }
         })
 
-        // Params Chart
-        let probs = [
-            'vfv',
-            'vb',
-            's_e1',
-            'e1_s',
-            'e1_i',
-            'i_r',
-            'i_h',
-            'i_d',
-            'e2_i',
-            'h_r',
-            'h_d',
-            'r_e2',
-            'e2_r',
-        ]
-        let colors = [
-            '#ff0000',
-            '#ff5500',
-            '#ffff00',
-            '#00ff00',
-            '#0000ff',
-            '#7ae2a0',
-            '#394a31',
-            '#efbf8d',
-            '#b766d5',
-            '#db428f',
-            '#e78db5',
-            '#9a00eb',
-            '#261b89',
-        ]
-        let datasets = probs.map((prob, index) => {
-            return {
-                label: prob,
-                data: [],
-                backgroundColor: 'transparent',
-                borderColor: colors[index],
-                borderWidth: 1,
-                pointRadius: 0,
-            }
-        })
-        this.probsChart = this.addChartToPage({
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: datasets
-            },
-            options: {
-                title: {
-                    display: true,
-                    text: `Probs`
-                },
-                elements: {
-                    line: {
-                        tension: 0
-                    }
-                },
-                scales: {
-                    yAxes: [{
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Params'
-                        }
-                    }],
-                    xAxes: [{
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'TimeSteps'
-                        }
-                    }],
-                },
-            }
-        })
+        // // Params Chart
+        // let probs = [
+        //     'vfv',
+        //     'vb',
+        //     's_e1',
+        //     'e1_s',
+        //     'e1_i',
+        //     'i_r',
+        //     'i_h',
+        //     'i_d',
+        //     'e2_i',
+        //     'h_r',
+        //     'h_d',
+        //     'r_e2',
+        //     'e2_r',
+        // ]
+        // let colors = [
+        //     '#ff0000',
+        //     '#ff5500',
+        //     '#ffff00',
+        //     '#00ff00',
+        //     '#0000ff',
+        //     '#7ae2a0',
+        //     '#394a31',
+        //     '#efbf8d',
+        //     '#b766d5',
+        //     '#db428f',
+        //     '#e78db5',
+        //     '#9a00eb',
+        //     '#261b89',
+        // ]
+        // let datasets = probs.map((prob, index) => {
+        //     return {
+        //         label: prob,
+        //         data: [],
+        //         backgroundColor: 'transparent',
+        //         borderColor: colors[index],
+        //         borderWidth: 1,
+        //         pointRadius: 0,
+        //     }
+        // })
+        // this.probsChart = this.addChartToPage({
+        //     type: 'line',
+        //     data: {
+        //         labels: [],
+        //         datasets: datasets
+        //     },
+        //     options: {
+        //         title: {
+        //             display: true,
+        //             text: `Probs`
+        //         },
+        //         elements: {
+        //             line: {
+        //                 tension: 0
+        //             }
+        //         },
+        //         scales: {
+        //             yAxes: [{
+        //                 scaleLabel: {
+        //                     display: true,
+        //                     labelString: 'Params'
+        //                 }
+        //             }],
+        //             xAxes: [{
+        //                 scaleLabel: {
+        //                     display: true,
+        //                     labelString: 'TimeSteps'
+        //                 }
+        //             }],
+        //         },
+        //     }
+        // })
     }
     
     step() {
         this.updatePopulationChart()
         this.updateSubCompPopChart()
         this.updateEppChart()
-        this.updateProbsChart()
+        // this.updateProbsChart()
     }
 
     updatePopulationChart() {
         let compartments = [
             'susceptible',
-            'exposed1',
-            'exposed2',
+            'exposed',
+            'exposed',
             'infected',
             'recovered',
             'hospitalized',
@@ -289,8 +289,8 @@ class Stats {
         let b = 0
         let compartments = [
             'susceptible',
-            'exposed1',
-            'exposed2',
+            'exposed',
+            'exposed',
             'infected',
             'recovered',
             'hospitalized',

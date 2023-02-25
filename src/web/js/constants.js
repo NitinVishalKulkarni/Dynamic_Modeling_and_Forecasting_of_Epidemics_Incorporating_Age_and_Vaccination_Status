@@ -24,29 +24,28 @@ _sub_compartment_preds = {vfv: 0.0, vb: 0.0}
 default_state = {
     populations: {
         susceptible: _sub_compartment_populations,
-        exposed1: _sub_compartment_populations,
-        exposed2: _sub_compartment_populations,
+        exposed: _sub_compartment_populations,
         infected: _sub_compartment_populations,
         recovered: _sub_compartment_populations,
         hospitalized: _sub_compartment_populations,
         deceased: _sub_compartment_populations,
     },
-    probs: {
+    params: {
         vfv: 0.0,
         vb: 0.0,
-        s_e1: 0.0,
-        e1_s: 0.0,
-        e1_i: 0.0,
+        alpha: 0.0,
+        beta: 0.0,
+        e_s: 0.0,
+        e_i: 0.0,
         i_r: 0.0,
         i_h: 0.0,
         i_d: 0.0,
         e2_i: 0.0,
         h_r: 0.0,
         h_d: 0.0,
-        r_e2: 0.0,
-        e2_r: 0.0,
+        e_r: 0.0,
     },
-    action_residue: {
+    action_in_effect: {
         social_distancing: 0,
         lockdown: 0,
         vaccine: 0,
@@ -67,9 +66,10 @@ default_state = {
             mask: 30,
         },
         max_steps: 365,
+        initial_population: 1000,
     },
-    action_mask: action_to_index,
-    step_count: 120,
+    action_mask: [1, 1, 1, 1],
+    step_count: 0,
     is_done: false,
 }
 

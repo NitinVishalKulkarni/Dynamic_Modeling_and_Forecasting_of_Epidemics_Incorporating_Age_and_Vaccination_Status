@@ -25,8 +25,8 @@ class SimUI {
         let u = d.u
 
         this.compartment(u * 7, ch, s.populations.susceptible, 'Susceptible')
-        this.compartment(u * 15, ch + (u * 5), s.populations.exposed1, 'exposed1')
-        this.compartment(u * 15, ch - (u * 5), s.populations.exposed2, 'exposed2')
+        this.compartment(u * 15, ch + (u * 5), s.populations.exposed, 'exposed')
+        this.compartment(u * 15, ch - (u * 5), s.populations.exposed, 'exposed')
         this.compartment(u * 23, ch, s.populations.infected, 'infected')
         this.compartment(u * 36, ch - (u * 5), s.populations.recovered, 'recovered')
         this.compartment(u * 36, ch, s.populations.hospitalized, 'hospitalized')

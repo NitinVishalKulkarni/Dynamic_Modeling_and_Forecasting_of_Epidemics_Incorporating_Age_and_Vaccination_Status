@@ -118,4 +118,4 @@ class SeihrdEnv(gym.Env):
 
 
 if __name__ == '__main__':
-    print(SeihrdEnv().observation().shape)
+    print(SeihrdEnv().state)
