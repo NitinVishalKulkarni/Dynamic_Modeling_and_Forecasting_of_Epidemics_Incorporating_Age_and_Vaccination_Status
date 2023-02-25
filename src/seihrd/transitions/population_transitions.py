@@ -3,9 +3,6 @@ from seihrd.base_models import SubCompPopulations, State
 
 
 class PopulationTransitions:
-    def __init__(self):
-        pass
-
     def __call__(self, state: State):
         s = deepcopy(state)
         po = deepcopy(s.populations)
