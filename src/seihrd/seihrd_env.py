@@ -70,7 +70,7 @@ class SeihrdEnv(gym.Env):
         return obs
 
     def render(self):
-        pass
+        print(self.state.json(indent=4))
 
     def get_state_dict(self):
         return self.state.dict()
@@ -118,4 +118,4 @@ class SeihrdEnv(gym.Env):
 
 
 if __name__ == '__main__':
-    print(SeihrdEnv().state)
+    print(SeihrdEnv().render())
