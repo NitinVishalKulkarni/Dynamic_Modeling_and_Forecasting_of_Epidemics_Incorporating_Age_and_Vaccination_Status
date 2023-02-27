@@ -1,4 +1,4 @@
-from os.path import dirname, abspath
+from os.path import dirname, abspath, join
 
 BASE_DIR = dirname(abspath(__file__))
-print(BASE_DIR)
+DATA_DIR = join(dirname(BASE_DIR), 'Data')
