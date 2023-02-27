@@ -46,6 +46,8 @@ class SeihrdEnv(gym.Env):
         s.time_step += 1
         s.is_done = s.time_step >= s.hyper_parameters.max_steps
 
+        # TODO: Reward calculation
+
         self.state = s
         return self.observe(), 0, s.is_done, s.is_done, {'action_mask': s.action_mask}
 
