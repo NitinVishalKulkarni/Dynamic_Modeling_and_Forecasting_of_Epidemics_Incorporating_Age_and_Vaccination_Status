@@ -1,4 +1,5 @@
 # Imports
+from typing import Any, Optional
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
@@ -349,7 +350,12 @@ class EpidemicSimulation(gym.Env):
 
         self.new_cases = []
 
-    def reset(self):
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        options: Optional[dict[str, Any]] = None,
+    ):
         """This method resets the environment and returns the state as the observation.
 
         :returns observation: - (Vector containing the normalized count of number of healthy people, infected people
