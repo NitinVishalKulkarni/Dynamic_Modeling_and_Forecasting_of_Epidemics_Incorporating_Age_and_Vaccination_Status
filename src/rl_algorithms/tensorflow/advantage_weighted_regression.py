@@ -120,7 +120,7 @@ class AdvantageWeightedRegression:
             [self.environment.number_of_booster_vaccinated_individuals]
 
         self.population_dynamics = {}
-        self.economic_and_social_rate_list = [self.environment.economic_and_social_rate]
+        self.economic_and_social_rate_list = [self.environment.economic_and_public_perception_rate]
         self.action_history = []
         # self.train()  # Calling the train method.
         # self.evaluate()  # Calling the evaluate method.
@@ -649,7 +649,7 @@ class AdvantageWeightedRegression:
             self.number_of_booster_vaccinated_individuals_list.append(
                 self.environment.number_of_booster_vaccinated_individuals)
 
-            self.economic_and_social_rate_list.append(self.environment.economic_and_social_rate)
+            self.economic_and_social_rate_list.append(self.environment.economic_and_public_perception_rate)
 
             # state = next_state  # Setting the current state to the next state.
             state.append(next_state)
@@ -701,7 +701,7 @@ class AdvantageWeightedRegression:
               'Number of Hospitalized People:', self.environment.number_of_hospitalized_individuals,
               'Number of Recovered People:', self.environment.number_of_recovered_individuals,
               'Number of Deceased People:', self.environment.number_of_deceased_individuals,
-              'GDP:', self.environment.economic_and_social_rate)
+              'GDP:', self.environment.economic_and_public_perception_rate)
 
         self.population_dynamics[iteration] = \
             [self.number_of_susceptible_individuals_list, self.number_of_exposed_individuals_list,

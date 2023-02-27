@@ -5,20 +5,21 @@ import numpy as np
 import pandas as pd
 
 
-# Defining the Disease Mitigation Environment.
+# Defining the Epidemic Simulation Environment.
 # noinspection DuplicatedCode
-class DiseaseMitigation(gym.Env):
+class EpidemicSimulation(gym.Env):
     """This class implements the Disease Mitigation environment."""
 
-    def __init__(self, state_name, state_population, start_date):
+    def __init__(self, data_path, state_name, state_population, start_date):
         """This method initializes the environment.
 
+        :param data_path: String - Path of the directory containing the state epidemiological data.
         :param state_name: String - Name of the state whose data we will train our model on.
         :param state_population: Integer - Population of the state we will train our model on.
         :param start_date: String - Date from which we will simulate our model. Format should be mm-dd-yyyy / yyyy-mm-dd
         ."""
 
-        self.covid_data = pd.read_csv(f'./{state_name}.csv')
+        self.covid_data = pd.read_csv(f'{data_path}/{state_name}.csv')
         self.covid_data['date'] = pd.to_datetime(self.covid_data['date'])
         self.population = state_population
         self.start_date = start_date
@@ -158,8 +159,8 @@ class DiseaseMitigation(gym.Env):
         self.number_of_booster_vaccinated_deceased_individuals_list = \
             [self.number_of_booster_vaccinated_deceased_individuals]
 
-        self.economic_and_social_rate = 100.0
-        self.economic_and_social_rate_list = [self.economic_and_social_rate]
+        self.economic_and_public_perception_rate = 100.0
+        self.economic_and_public_perception_rate_list = [self.economic_and_public_perception_rate]
 
         # Values of the epidemiological model parameters:
         self.alpha = [0.9921061737800656, 0.999999999999382, 0.9997006558362771, 0.9968623277813831,
@@ -487,8 +488,8 @@ class DiseaseMitigation(gym.Env):
         self.number_of_booster_vaccinated_deceased_individuals_list = \
             [self.number_of_booster_vaccinated_deceased_individuals]
 
-        self.economic_and_social_rate = 100
-        self.economic_and_social_rate_list = [self.economic_and_social_rate]
+        self.economic_and_public_perception_rate = 100
+        self.economic_and_public_perception_rate_list = [self.economic_and_public_perception_rate]
 
         self.new_cases = []
 
@@ -525,7 +526,7 @@ class DiseaseMitigation(gym.Env):
         # Simpler observation:
         observation = \
             [self.number_of_infected_individuals / self.population,
-             self.economic_and_social_rate / 100, self.previous_action, self.current_action]
+             self.economic_and_public_perception_rate / 100, self.previous_action, self.current_action]
 
         info = {}
 
@@ -560,9 +561,9 @@ class DiseaseMitigation(gym.Env):
             self.beta = self.beta_original[index] * 1.4 \
                 if self.number_of_infected_individuals / self.population >= 0.001 \
                 else self.beta_original[index] * 1.1
-            self.economic_and_social_rate = min(1.005 * self.economic_and_social_rate, 100) \
+            self.economic_and_public_perception_rate = min(1.005 * self.economic_and_public_perception_rate, 100) \
                 if self.number_of_infected_individuals / self.population < 0.001 \
-                else 0.999 * self.economic_and_social_rate
+                else 0.999 * self.economic_and_public_perception_rate
             self.no_npm_pm_counter += 1
             self.sdm_counter = 0
             self.lockdown_counter = 0
@@ -570,7 +571,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter = 0
         elif action == 1:  # SDM
             self.beta = self.beta_original[index] * 0.95
-            self.economic_and_social_rate *= 0.9965
+            self.economic_and_public_perception_rate *= 0.9965
             self.no_npm_pm_counter = 0
             self.sdm_counter += 1
             self.lockdown_counter = 0
@@ -578,7 +579,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter = 0
         elif action == 2:  # Lockdown (Closure of non-essential business, schools, gyms...) 0.997
             self.beta = self.beta_original[index] * 0.85
-            self.economic_and_social_rate *= 0.997
+            self.economic_and_public_perception_rate *= 0.997
             self.no_npm_pm_counter = 0
             self.sdm_counter = 0
             self.lockdown_counter += 1
@@ -586,7 +587,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter = 0
         elif action == 3:  # Public Mask Mandates 0.9975
             self.beta = self.beta_original[index] * 0.925
-            self.economic_and_social_rate *= 0.9965
+            self.economic_and_public_perception_rate *= 0.9965
             self.no_npm_pm_counter = 0
             self.sdm_counter = 0
             self.lockdown_counter = 0
@@ -594,7 +595,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter = 0
         elif action == 4:  # Vaccination Mandates 0.994
             self.beta = self.beta_original[index] * 0.95
-            self.economic_and_social_rate *= 0.994
+            self.economic_and_public_perception_rate *= 0.994
             self.no_npm_pm_counter = 0
             self.sdm_counter = 0
             self.lockdown_counter = 0
@@ -603,7 +604,7 @@ class DiseaseMitigation(gym.Env):
 
         elif action == 5:  # SDM and Public Mask Mandates 0.9965
             self.beta = self.beta_original[index] * 0.875
-            self.economic_and_social_rate *= 0.9965
+            self.economic_and_public_perception_rate *= 0.9965
             self.no_npm_pm_counter = 0
             self.sdm_counter += 1
             self.lockdown_counter = 0
@@ -611,7 +612,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter = 0
         elif action == 6:  # SDM and Vaccination Mandates 0.993
             self.beta = self.beta_original[index] * 0.825
-            self.economic_and_social_rate *= 0.993
+            self.economic_and_public_perception_rate *= 0.993
             self.no_npm_pm_counter = 0
             self.sdm_counter += 1
             self.lockdown_counter = 0
@@ -620,7 +621,7 @@ class DiseaseMitigation(gym.Env):
 
         elif action == 7:  # Lockdown and Public Mask Mandates 0.9965
             self.beta = self.beta_original[index] * 0.75
-            self.economic_and_social_rate *= 0.994
+            self.economic_and_public_perception_rate *= 0.994
             self.no_npm_pm_counter = 0
             self.sdm_counter = 0
             self.lockdown_counter += 1
@@ -628,7 +629,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter = 0
         elif action == 8:  # Lockdown and Vaccination Mandates 0.993
             self.beta = self.beta_original[index] * 0.80
-            self.economic_and_social_rate *= 0.993
+            self.economic_and_public_perception_rate *= 0.993
             self.no_npm_pm_counter = 0
             self.sdm_counter = 0
             self.lockdown_counter += 1
@@ -637,7 +638,7 @@ class DiseaseMitigation(gym.Env):
 
         elif action == 9:  # Public Mask Mandates and Vaccination Mandates 0.9935
             self.beta = self.beta_original[index] * 0.90
-            self.economic_and_social_rate *= 0.9935
+            self.economic_and_public_perception_rate *= 0.9935
             self.no_npm_pm_counter = 0
             self.sdm_counter = 0
             self.lockdown_counter = 0
@@ -645,7 +646,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter += 1
         elif action == 10:  # SDM, Public Mask Mandates and Vaccination Mandates 0.9925
             self.beta = self.beta_original[index] * 0.60
-            self.economic_and_social_rate *= 0.9925
+            self.economic_and_public_perception_rate *= 0.9925
             self.no_npm_pm_counter = 0
             self.sdm_counter += 1
             self.lockdown_counter = 0
@@ -654,7 +655,7 @@ class DiseaseMitigation(gym.Env):
 
         elif action == 11:  # Lockdown, Public Mask Mandates and Vaccination Mandates 0.9925
             self.beta = self.beta_original[index] * 0.60
-            self.economic_and_social_rate *= 0.9925
+            self.economic_and_public_perception_rate *= 0.9925
             self.no_npm_pm_counter = 0
             self.sdm_counter = 0
             self.lockdown_counter += 1
@@ -662,7 +663,7 @@ class DiseaseMitigation(gym.Env):
             self.vaccination_mandate_counter += 1
 
         self.compute_population_dynamics(action)
-        self.economic_and_social_rate_list.append(self.economic_and_social_rate)
+        self.economic_and_public_perception_rate_list.append(self.economic_and_public_perception_rate)
 
         # Checking which actions are allowed:
         # Potential Violations (If the action is not taken in the next time-step.):
@@ -760,14 +761,14 @@ class DiseaseMitigation(gym.Env):
 
         # Reward
         reward = ((-self.infection_coefficient * self.number_of_infected_individuals / self.population)
-                  + self.economic_and_social_rate)
+                  + self.economic_and_public_perception_rate)
 
         self.timestep += 1
 
         # Simplified observation:
         observation = \
             [self.number_of_infected_individuals / self.population,
-             self.economic_and_social_rate / 100, self.previous_action, self.current_action]
+             self.economic_and_public_perception_rate / 100, self.previous_action, self.current_action]
 
         # The episode terminates when the number of infected people becomes greater than 25 % of the population.
         terminated = True if (self.number_of_infected_individuals >= 0.99 * self.population or
