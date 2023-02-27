@@ -6,12 +6,14 @@ import re
 
 
 class DataScrapper:
+    """This class implements a data scrapper which collects data on cases and outcomes from 'worldometers.info' """
+
     def __init__(
         self,
         website_url="https://www.worldometers.info/coronavirus/country/us",
         output_path="../Data/Updated Data/cases_and_outcomes/",
     ):
-        """This method..."""
+        """This method initializes the required parameters."""
 
         self.website_url = website_url
         self.output_path = output_path
@@ -33,13 +35,13 @@ class DataScrapper:
             state_data_website_url = requests.get(state_data_links[state]).text
             state_data_soup = BeautifulSoup(state_data_website_url, "html.parser")
 
-            data_scrapper.scrape_total_cases_data(soup=state_data_soup)
-            data_scrapper.scrape_new_cases_data(soup=state_data_soup)
-            data_scrapper.scrape_active_cases_data(soup=state_data_soup)
-            data_scrapper.scrape_total_deaths_data(soup=state_data_soup)
-            data_scrapper.scrape_new_deaths_data(soup=state_data_soup)
+            self.scrape_total_cases_data(soup=state_data_soup)
+            self.scrape_new_cases_data(soup=state_data_soup)
+            self.scrape_active_cases_data(soup=state_data_soup)
+            self.scrape_total_deaths_data(soup=state_data_soup)
+            self.scrape_new_deaths_data(soup=state_data_soup)
 
-            dataset = data_scrapper.create_final_dataset()
+            dataset = self.create_final_dataset()
             dataset.to_csv(f"{self.output_path}{state}.csv", index=False)
 
     def scrape_total_cases_data(self, soup):
@@ -210,11 +212,11 @@ class DataScrapper:
         data_json = json.loads(data)
 
         # Extracting the required data.
-        daily_cases = data_json["series"][0]["data"]
+        daily_deaths = data_json["series"][0]["data"]
         three_day_moving_average = data_json["series"][1]["data"]
         seven_day_moving_average = data_json["series"][2]["data"]
 
-        self.data["Daily Deaths"] = daily_cases
+        self.data["Daily Deaths"] = daily_deaths
         self.data["Daily Deaths (3-Day Moving Average)"] = three_day_moving_average
         self.data["Daily Deaths (7-Day Moving Average)"] = seven_day_moving_average
 

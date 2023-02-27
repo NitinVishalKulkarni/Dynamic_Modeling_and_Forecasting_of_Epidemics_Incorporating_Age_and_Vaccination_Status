@@ -5,6 +5,8 @@ temp.*
 .DS_Store
 temp/
 *.pdf
+Results/
+sac/
 
 
 # Byte-compiled / optimized / DLL files
