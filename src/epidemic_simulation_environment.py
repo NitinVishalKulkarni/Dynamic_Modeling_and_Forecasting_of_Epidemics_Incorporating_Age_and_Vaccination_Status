@@ -553,6 +553,8 @@ class EpidemicSimulation(gym.Env):
         self.current_action = action
 
         # This index helps to use the different parameter values for the different splits.
+        # AD: Converts range(n) into [7 (10x), 8 (28x), 9 (28x), 10 (28x), ...]
+        #     28 = 4 weeks. 214 = start date (october)
         index = int(np.floor((self.timestep + 214) / 28))
 
         # Updating the action dependent parameters:
@@ -797,22 +799,21 @@ class EpidemicSimulation(gym.Env):
         # Index to use the different model parameter values for the different splits.
         index = int(np.floor((self.timestep + 214) / 28))
 
-        model_parameters = [
-            self.beta, self.alpha,
-            self.sigma_s_uv, self.sigma_s_fv, self.sigma_s_bv, self.sigma_r_uv, self.sigma_r_fv, self.sigma_r_bv,
-            self.zeta_s_uv, self.zeta_s_fv, self.zeta_s_bv, self.zeta_r_uv, self.zeta_r_fv, self.zeta_r_bv,
-            self.gamma_i_uv, self.gamma_i_fv, self.gamma_i_bv, self.gamma_h_uv, self.gamma_h_fv, self.gamma_h_bv,
-            self.delta_uv, self.delta_fv, self.delta_bv,
-            self.mu_i_uv, self.mu_i_fv, self.mu_i_bv, self.mu_h_uv, self.mu_h_fv, self.mu_h_bv
-            ]
+        # model_parameters = [
+        #     self.beta, self.alpha,
+        #     self.sigma_s_uv, self.sigma_s_fv, self.sigma_s_bv, self.sigma_r_uv, self.sigma_r_fv, self.sigma_r_bv,
+        #     self.zeta_s_uv, self.zeta_s_fv, self.zeta_s_bv, self.zeta_r_uv, self.zeta_r_fv, self.zeta_r_bv,
+        #     self.gamma_i_uv, self.gamma_i_fv, self.gamma_i_bv, self.gamma_h_uv, self.gamma_h_fv, self.gamma_h_bv,
+        #     self.delta_uv, self.delta_fv, self.delta_bv,
+        #     self.mu_i_uv, self.mu_i_fv, self.mu_i_bv, self.mu_h_uv, self.mu_h_fv, self.mu_h_bv
+        #     ]
+        #
+        # standard_deviation = 0.05
+        # # for model_parameter in model_parameters:
 
-        standard_deviation = 0.05
-        # for model_parameter in model_parameters:
-
-
-
-        val = 0.05
+        val = 0.05  # AD: Why?
         mu, sigma = self.beta, val * self.beta
+        # AD: Why brownian motion?
         self.beta = np.random.normal(mu, sigma, 1)
 
         mu, sigma = self.alpha[index], val * self.alpha[index]

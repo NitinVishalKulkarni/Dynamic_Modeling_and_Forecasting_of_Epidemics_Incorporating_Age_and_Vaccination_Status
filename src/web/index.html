@@ -1,0 +1,91 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Divoc</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--  <link rel="manifest" href="site.webmanifest">-->
+<!--  <link rel="apple-touch-icon" href="icon.png">-->
+<!--  &lt;!&ndash; Place favicon.ico in the root directory &ndash;&gt;-->
+
+<!--  <link rel="stylesheet" href="css/normalize.css">-->
+<!--  <link rel="stylesheet" href="css/main.css">-->
+  <link rel="stylesheet" href="css/bootstrap.css">
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+<!-- -------------------------------------------------------------- -->
+
+<div class="container">
+
+  <h1>Divoc</h1>
+
+  <div class="row" id="stats">
+    <p id="message_p"></p>
+  </div>
+
+  <div>
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="restartBtn">Restart</button>
+    <button id="updateParamsBtn">Update Params</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <div>
+    <button id="action_v" disabled>Vaccine Mandate</button>
+    <button id="action_m" disabled>Mask Mandate</button>
+    <button id="action_l" disabled>Lockdown</button>
+    <button id="action_s" disabled>Social Distancing</button>
+  </div>
+
+  <table id="hyper-parameters" class="table">
+    <tr>
+      <th>Param</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </table>
+
+  <div class="row" id="graphs"></div>
+
+  <br/><br/>
+
+  Created by <a href="https://akhil.ai" target="_blank">Akhilez</a><br/><br/>
+
+</div>
+
+<!-- -------------------------------------------------------------- -->
+
+<script src="js/vendor/jquery.js"></script>
+<script src="js/vendor/bootstrap.js"></script>
+<script src="js/vendor/chart.min.js"></script>
+<script src="js/vendor/paper.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+
+<!--<script src="https://code.highcharts.com/modules/heatmap.js"></script>-->
+
+<!-- -------------------------------------------------------------- -->
+
+<script src="js/constants.js"></script>
+<script src="js/main.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/sim.js"></script>
+
+<!--<script src="js/data/genes.json"></script>-->
+
+<!-- ------------------------------------------------------------- -->
+
+<!--<script src="js/vendor/modernizr-3.8.0.min.js"></script>-->
+<!--<script src="js/plugins.js"></script>-->
+
+</body>
+
+</html>
