@@ -13,6 +13,7 @@ class ActionTransitions:
         3. action_in_effect
         4. action_cool_down
         5. action_mask
+        6. params.vfv
     """
 
     def __init__(self):
@@ -70,7 +71,7 @@ class ActionTransitions:
         in_effect *= ~finished
 
         s.action_in_effect = in_effect
-        # TODO: AD: Should we reverse the effect after the in_effect is done?
+        # AD: Should we reverse the effect after the in_effect is done?
 
         """ COOLDOWN """
         # Increment cool-downs for already cooling actions.
@@ -91,7 +92,18 @@ class ActionTransitions:
 
         s.action_mask = mask * 1
 
+        """ VFV """
+        # AD: Nitin, can you please explain?
+        if tuple(action) in (  # M, SM, SV, LM
+            # S L  M  V
+            (0, 0, 1, 0),
+            (1, 0, 1, 0),
+            (1, 0, 0, 1),
+            (0, 1, 1, 0),
+        ):
+            s.params.vfv = 0.007084760245099044
+
         return s
 
 
-# TODO: Write tests for sanity check.
+# TODO: AD: Write tests for sanity check.

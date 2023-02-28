@@ -40,8 +40,8 @@ class SeihrdEnv(gym.Env):
         s = self.state
         prev_infected = s.populations.infected.total()
 
+        s = self.seasonal_transitions(s)
         s = self.action_transitions(s, action)
-        # s = self.seasonal_transitions(s)
         s = self.population_transitions(s)
 
         s.time_step += 1
@@ -83,6 +83,7 @@ class SeihrdEnv(gym.Env):
 
     @staticmethod
     def get_initial_state():
+        # TODO: AD: Get the initial state.
         hp = SimHyperParams(
             action_durations=[14, 150, 14, 30],
             action_cool_downs=[14, 150, 14, 30],
@@ -126,4 +127,5 @@ class SeihrdEnv(gym.Env):
 
 if __name__ == '__main__':
     env = SeihrdEnv()
-    print([f for f in env.state.populations.__fields__])
+    env.reset()
+    env.step((0, 0, 0, 0))
