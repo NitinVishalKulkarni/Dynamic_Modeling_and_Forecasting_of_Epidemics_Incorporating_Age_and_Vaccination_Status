@@ -38,6 +38,7 @@ class SeihrdEnv(gym.Env):
 
     def step(self, action: Sequence[int]):
         s = self.state
+        prev_infected = s.populations.infected.total()
 
         s = self.action_transitions(s, action)
         # s = self.seasonal_transitions(s)
@@ -46,10 +47,12 @@ class SeihrdEnv(gym.Env):
         s.time_step += 1
         s.is_done = s.time_step >= s.hyper_parameters.max_steps
 
-        # TODO: Reward calculation
+        # Reward calculation
+        infection_change = (prev_infected - s.populations.infected.total()) / prev_infected
+        reward = infection_change + s.epp
 
         self.state = s
-        return self.observe(), 0, s.is_done, s.is_done, {'action_mask': s.action_mask}
+        return self.observe(), reward, s.is_done, s.is_done, {'action_mask': s.action_mask}
 
     def reset(self, *_args, **_kwargs) -> (np.array, dict):
         self.__init__()
