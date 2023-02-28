@@ -1,6 +1,6 @@
 from typing import Sequence
 import numpy as np
-from seihrd.base_models import State, A, a2i
+from seihrd.sim.base_models import State, A, a2i
 
 
 class ActionTransitions:

@@ -1,7 +1,7 @@
 from typing import Sequence
 import numpy as np
 from gymnasium.envs.registration import EnvSpec
-from seihrd.base_models import (
+from seihrd.sim.base_models import (
     State,
     Populations,
     SubCompPopulations,
@@ -12,9 +12,9 @@ from seihrd.base_models import (
 )
 from random import random
 import gymnasium as gym
-from seihrd.transitions.action_transitions import ActionTransitions
-from seihrd.transitions.population_transitions import PopulationTransitions
-from seihrd.transitions.seasonal_transitions import SeasonalTransitions
+from seihrd.sim.transitions.action_transitions import ActionTransitions
+from seihrd.sim.transitions.population_transitions import PopulationTransitions
+from seihrd.sim.transitions.seasonal_transitions import SeasonalTransitions
 
 
 class SeihrdEnv(gym.Env):
