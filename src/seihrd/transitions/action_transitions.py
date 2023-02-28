@@ -47,7 +47,7 @@ class ActionTransitions:
         # Apply actions that are already in effect.
         action = (action | (in_effect > 0)) * 1
 
-        """ beta & epp """
+        """ BETA & EPP """
         if action.sum() == 0:
             if s.populations.infected.total() / s.populations.total() < 0.001:
                 beta_m = 1.1
@@ -62,7 +62,7 @@ class ActionTransitions:
         s.epp *= epp_m
         s.epp = min(s.epp, 100)
 
-        """ action_in_effect """
+        """ IN EFFECT """
         # Increment in_effect
         in_effect += action
         # If max duration reached, set in_effect = 0
@@ -70,8 +70,9 @@ class ActionTransitions:
         in_effect *= ~finished
 
         s.action_in_effect = in_effect
+        # TODO: AD: Should we reverse the effect after the in_effect is done?
 
-        """ cooldown """
+        """ COOLDOWN """
         # Increment cool-downs for already cooling actions.
         cooldown += cooldown > 0
         # cool-down = 1 for newly finished actions.
@@ -81,7 +82,7 @@ class ActionTransitions:
 
         s.action_cool_down = cooldown
 
-        """ action_mask """
+        """ ACTION MASK """
         # An action is legal only if in_effect = 0 and cooldown = 0
         mask = (cooldown + in_effect) == 0
         # Additionally, if L is in_effect, S is illegal.
