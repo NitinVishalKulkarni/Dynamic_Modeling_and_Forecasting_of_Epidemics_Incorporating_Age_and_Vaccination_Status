@@ -49,14 +49,18 @@ class ActionTransitions:
 
         """ beta & epp """
         if action.sum() == 0:
-            # TODO: Apply the weird logic for noop.
-            beta_m = 1
-            epp_m = 1
+            if s.populations.infected.total() / s.populations.total() < 0.001:
+                beta_m = 1.1
+                epp_m = 1.005
+            else:
+                beta_m = 1.4
+                epp_m = 0.999
         else:
             beta_m, epp_m = self.multiplier[tuple(action)]
 
         s.params.beta *= beta_m
         s.epp *= epp_m
+        s.epp = min(s.epp, 100)
 
         """ action_in_effect """
         # Increment in_effect
