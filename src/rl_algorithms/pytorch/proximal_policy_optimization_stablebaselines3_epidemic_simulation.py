@@ -1,5 +1,5 @@
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from src.epidemic_simulation_environment import EpidemicSimulation
+from src.epidemic_simulation_environment.epidemic_simulation_environment import EpidemicSimulation
 import stable_baselines3
 from stable_baselines3.common.env_checker import check_env
 import gymnasium as gym

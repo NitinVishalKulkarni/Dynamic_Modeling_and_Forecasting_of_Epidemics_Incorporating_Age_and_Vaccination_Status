@@ -1,7 +1,7 @@
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig, PPOTorchPolicy
 from ray.rllib.algorithms.sac import SACConfig, SACTorchPolicy
-from src.epidemic_simulation_environment import EpidemicSimulation
+from src.epidemic_simulation_environment.epidemic_simulation_environment import EpidemicSimulation
 
 env = EpidemicSimulation(
         data_path=f"../../../Data/Updated Data/epidemiological_model_data/",

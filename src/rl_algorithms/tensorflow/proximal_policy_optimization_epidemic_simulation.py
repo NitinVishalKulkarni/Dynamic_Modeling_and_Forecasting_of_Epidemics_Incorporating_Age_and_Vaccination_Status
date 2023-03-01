@@ -12,7 +12,7 @@ from tensorflow.python.keras import Model
 from tensorflow.python.keras.layers import Dense, Input, LSTM
 from tensorflow.python.keras.optimizer_v2.adam import Adam
 
-from src.epidemic_simulation_environment import EpidemicSimulation
+from src.epidemic_simulation_environment.epidemic_simulation_environment import EpidemicSimulation
 
 
 # noinspection DuplicatedCode
