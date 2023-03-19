@@ -38,8 +38,8 @@ class ActionTransitions:
 
     def __call__(self, state: State, action: Sequence[int]):
         s = state.copy(deep=True)
-        in_effect = np.array(s.action_in_effect, dtype=np.float)
-        cooldown = np.array(s.action_cool_down, dtype=np.float)
+        in_effect = np.array(s.action_in_effect, dtype=float)
+        cooldown = np.array(s.action_cool_down, dtype=float)
         max_in_effect = np.array(s.hyper_parameters.action_durations)
         max_cooldown = np.array(s.hyper_parameters.action_cool_downs)
 
@@ -104,6 +104,3 @@ class ActionTransitions:
             s.params.vfv = 0.007084760245099044
 
         return s
-
-
-# TODO: AD: Write tests for sanity check.

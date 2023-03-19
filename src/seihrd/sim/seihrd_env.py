@@ -48,7 +48,10 @@ class SeihrdEnv(gym.Env):
         s.is_done = s.time_step >= s.hyper_parameters.max_steps
 
         # Reward calculation
-        infection_change = (prev_infected - s.populations.infected.total()) / prev_infected
+        if prev_infected == 0:
+            infection_change = 0
+        else:
+            infection_change = (prev_infected - s.populations.infected.total()) / prev_infected
         reward = infection_change + s.epp
 
         self.state = s
@@ -62,7 +65,7 @@ class SeihrdEnv(gym.Env):
         populations = self.state.populations.to_list()
         populations = np.array(populations).flatten() / self.state.populations.total()
 
-        in_affect = [self.state.action_in_effect[a] / self.state.hyper_parameters.action_durations[a] for a in i2a]
+        in_affect = [self.state.action_in_effect[a] / self.state.hyper_parameters.action_durations[a] for a in range(len(i2a))]
         progress = self.state.time_step / self.state.hyper_parameters.max_steps
 
         obs = np.concatenate((populations, in_affect, [progress, self.state.epp]))
@@ -134,8 +137,9 @@ class SeihrdEnv(gym.Env):
 
 if __name__ == '__main__':
     env = SeihrdEnv()
-    for _ in range(10):
-        action = env.action_space.sample(mask=env.get_masks())
-        print(action)
-        # env.reset()
-        # env.step((0, 0, 0, 0))
+    env.reset()
+    env.step([0, 0, 0, 0])
+
+    env.step([1, 0, 0, 0])
+    print()
+
