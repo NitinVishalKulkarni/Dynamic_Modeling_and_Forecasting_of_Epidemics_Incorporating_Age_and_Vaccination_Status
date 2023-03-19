@@ -138,8 +138,7 @@ class SeihrdEnv(gym.Env):
 if __name__ == '__main__':
     env = SeihrdEnv()
     env.reset()
-    env.step([0, 0, 0, 0])
-
-    env.step([1, 0, 0, 0])
-    print()
-
+    for _ in range(10):
+        action = env.action_space.sample(mask=env.get_masks())
+        env.step(action)
+        print(action, env.state.action_mask)

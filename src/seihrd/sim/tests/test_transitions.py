@@ -80,6 +80,20 @@ class ActionMaskTestCase(unittest.TestCase):
         self.assertEqual(list(env.state.action_in_effect), [2, 0, 0, 0])
         self.assertEqual(list(env.state.action_cool_down), [0, 0, 0, 0])
 
+    def test_lockdown_disables_social_distancing(self):
+        env = SeihrdEnv()
+        env.reset()
+
+        env.step([0, 0, 0, 0])
+        self.assertEqual(list(env.state.action_mask), [1, 1, 1, 1])
+        self.assertEqual(list(env.state.action_in_effect), [0, 0, 0, 0])
+        self.assertEqual(list(env.state.action_cool_down), [0, 0, 0, 0])
+
+        env.step([0, 1, 0, 0])
+        self.assertEqual(list(env.state.action_mask), [0, 0, 1, 1])
+        self.assertEqual(list(env.state.action_in_effect), [0, 1, 0, 0])
+        self.assertEqual(list(env.state.action_cool_down), [0, 0, 0, 0])
+
 
 if __name__ == '__main__':
     unittest.main()
