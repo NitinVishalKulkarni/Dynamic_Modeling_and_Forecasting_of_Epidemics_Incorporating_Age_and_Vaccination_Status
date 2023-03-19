@@ -36,9 +36,11 @@ class SeihrdEnv(gym.Env):
         self.seasonal_transitions = SeasonalTransitions()
         self.population_transitions = PopulationTransitions()
 
+        self.state = self.seasonal_transitions(self.state)
+
     def step(self, action: Sequence[int]):
         s = self.state
-        prev_infected = s.populations.infected.total()
+        s_prev = self.state.copy(deep=True)
 
         s = self.seasonal_transitions(s)
         s = self.action_transitions(s, action)
@@ -47,15 +49,14 @@ class SeihrdEnv(gym.Env):
         s.time_step += 1
         s.is_done = s.time_step >= s.hyper_parameters.max_steps
 
-        # Reward calculation
-        if prev_infected == 0:
-            infection_change = 0
-        else:
-            infection_change = (prev_infected - s.populations.infected.total()) / prev_infected
-        reward = infection_change + s.epp
-
         self.state = s
-        return self.observe(), reward, s.is_done, s.is_done, {'action_mask': s.action_mask}
+        return (
+            self.observe(),
+            self.reward(s_prev),
+            s.is_done,
+            s.is_done,
+            {'action_mask': s.action_mask}
+        )
 
     def reset(self, *_args, **_kwargs) -> (np.array, dict):
         self.__init__()
@@ -84,6 +85,16 @@ class SeihrdEnv(gym.Env):
     def get_state_dict(self):
         return self.state.dict()
 
+    def reward(self, state_prev):
+        prev_infected = state_prev.populations.infected.total()
+
+        # Reward calculation
+        if prev_infected == 0:
+            infection_change = 0
+        else:
+            infection_change = (prev_infected - s.populations.infected.total()) / prev_infected
+        reward = infection_change + s.epp
+
     def get_masks(self):
         mask = np.ones((len(env.state.action_mask), 2))
         mask[:, 1] = self.state.action_mask
@@ -95,36 +106,36 @@ class SeihrdEnv(gym.Env):
     def get_initial_state():
         # TODO: AD: Get the initial state.
         hp = SimHyperParams(
-            action_durations=[14, 150, 14, 30],
-            action_cool_downs=[14, 150, 14, 30],
-            max_steps=365,
-            initial_population=1000,
+            # TODO: min_sdm_period
+            action_durations=[28, 14, 28, 0],
+            action_cool_downs=[112, 42, 180, 0],
+            max_steps=101,
         )
         state = State(
             populations=Populations(
-                susceptible=SubCompPopulations(uv=hp.initial_population),
-                exposed=SubCompPopulations(),
-                infected=SubCompPopulations(),
-                recovered=SubCompPopulations(),
-                hospitalized=SubCompPopulations(),
-                deceased=SubCompPopulations(),
+                susceptible=SubCompPopulations(uv=3826973, fv=11676612, b=0),
+                exposed=SubCompPopulations(uv=1021144, fv=285140, b=0),
+                infected=SubCompPopulations(uv=64501, fv=4896, b=0),
+                recovered=SubCompPopulations(uv=1672025, fv=126930, b=0),
+                hospitalized=SubCompPopulations(uv=5037, fv=314, b=0),
+                deceased=SubCompPopulations(uv=47115, fv=3576, b=0),
             ),
             params=Params(
-                vfv=random(),
-                vb=random(),
-                alpha=random(),
-                beta=random(),
-                e_s=SubCompParams(uv=random(), fv=random(), b=random()),
-                e_i=SubCompParams(uv=random(), fv=random(), b=random()),
-                i_r=SubCompParams(uv=random(), fv=random(), b=random()),
-                i_h=SubCompParams(uv=random(), fv=random(), b=random()),
-                i_d=SubCompParams(uv=random(), fv=random(), b=random()),
-                e2_i=SubCompParams(uv=random(), fv=random(), b=random()),
-                h_r=SubCompParams(uv=random(), fv=random(), b=random()),
-                h_d=SubCompParams(uv=random(), fv=random(), b=random()),
-                e_r=SubCompParams(uv=random(), fv=random(), b=random()),
+                vfv=0,
+                vb=0,
+                alpha=0,
+                beta=0,
+                e_s=SubCompParams(),
+                e_i=SubCompParams(),
+                i_r=SubCompParams(),
+                i_h=SubCompParams(),
+                i_d=SubCompParams(),
+                e2_i=SubCompParams(),
+                h_r=SubCompParams(),
+                h_d=SubCompParams(),
+                e_r=SubCompParams(),
             ),
-            epp=1.0,
+            epp=100.0,
             hyper_parameters=hp,
             action_in_effect=[0, 0, 0, 0],
             action_cool_down=[0, 0, 0, 0],

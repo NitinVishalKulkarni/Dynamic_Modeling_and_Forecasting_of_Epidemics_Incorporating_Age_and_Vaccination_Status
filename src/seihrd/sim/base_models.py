@@ -33,7 +33,6 @@ class SimHyperParams(BaseModel):
     action_durations: Sequence[int]
     action_cool_downs: Sequence[int]
     max_steps: int
-    initial_population: int = 1000
 
 
 class SubCompPopulations(BaseModel, DictLike):
