@@ -20,7 +20,7 @@ from seihrd.sim.transitions.seasonal_transitions import SeasonalTransitions
 class SeihrdEnv(gym.Env):
     metadata = {'render.modes': ['ansi', 'human']}
     reward_range = (-np.inf, np.inf)
-    action_space = gym.spaces.MultiDiscrete([1, 1, 1, 1])
+    action_space = gym.spaces.MultiDiscrete([2, 2, 2, 2])
     observation_space = gym.spaces.Discrete(24)
 
     spec = EnvSpec(
@@ -81,6 +81,13 @@ class SeihrdEnv(gym.Env):
     def get_state_dict(self):
         return self.state.dict()
 
+    def get_masks(self):
+        mask = np.ones((len(env.state.action_mask), 2))
+        mask[:, 1] = self.state.action_mask
+        mask = mask.astype(np.int8)
+        mask = tuple(mask)
+        return mask
+
     @staticmethod
     def get_initial_state():
         # TODO: AD: Get the initial state.
@@ -127,5 +134,8 @@ class SeihrdEnv(gym.Env):
 
 if __name__ == '__main__':
     env = SeihrdEnv()
-    env.reset()
-    env.step((0, 0, 0, 0))
+    for _ in range(10):
+        action = env.action_space.sample(mask=env.get_masks())
+        print(action)
+        # env.reset()
+        # env.step((0, 0, 0, 0))
