@@ -1,4 +1,4 @@
-from seihrd.base_models import SubCompPopulations, State
+from seihrd.sim.base_models import SubCompPopulations, State
 
 
 class PopulationTransitions:
