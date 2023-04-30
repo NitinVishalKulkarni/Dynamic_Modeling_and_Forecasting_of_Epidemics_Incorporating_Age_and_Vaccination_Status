@@ -3,12 +3,19 @@ import pandas as pd
 
 
 class PopulationDynamicsComputer:
-
     @staticmethod
-    def compute_population_dynamics(action, beta, environment_config, epidemiological_model_data,
-                                    epidemiological_model_parameters, new_cases, population_dynamics_dataframes, state,
-                                    state_populations, timestep,
-                                    ):
+    def compute_population_dynamics(
+        action,
+        beta,
+        environment_config,
+        epidemiological_model_data,
+        epidemiological_model_parameters,
+        new_cases,
+        population_dynamics_dataframes,
+        state,
+        state_populations,
+        timestep,
+    ):
         """This method computes the action dependent population dynamics
         :parameter action: Integer - Represents the action taken by the agent
         :param beta:
@@ -32,11 +39,9 @@ class PopulationDynamicsComputer:
                 ].iloc[timestep + 214]
             )
         else:
-            percentage_unvaccinated_to_fully_vaccinated = (
-                epidemiological_model_data[state][
-                    "percentage_unvaccinated_to_fully_vaccinated"
-                ].iloc[timestep + 214]
-            )
+            percentage_unvaccinated_to_fully_vaccinated = epidemiological_model_data[
+                state
+            ]["percentage_unvaccinated_to_fully_vaccinated"].iloc[timestep + 214]
             percentage_fully_vaccinated_to_booster_vaccinated = (
                 epidemiological_model_data[state][
                     "percentage_fully_vaccinated_to_boosted"
@@ -60,7 +65,7 @@ class PopulationDynamicsComputer:
                 standard_deviation
                 * epidemiological_model_parameters[state][model_parameter][index],
             )
-            model_parameter_value = np.random.normal(mu, sigma, 1)
+            model_parameter_value = np.random.normal(mu, sigma, 1)[0]
             epidemiological_model_parameters[state][model_parameter][
                 index
             ] = model_parameter_value
@@ -69,13 +74,13 @@ class PopulationDynamicsComputer:
         number_of_unvaccinated_susceptible_individuals = int(
             population_dynamics_dataframes[state]["Susceptible_UV"].iloc[-1]
             - (
-                    beta
-                    * population_dynamics_dataframes[state]["Susceptible_UV"].iloc[-1]
-                    * (
-                            population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                            ** epidemiological_model_parameters[state]["alpha"][index]
-                    )
-                    / state_populations[state]
+                beta
+                * population_dynamics_dataframes[state]["Susceptible_UV"].iloc[-1]
+                * (
+                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    ** epidemiological_model_parameters[state]["alpha"][index]
+                )
+                / state_populations[state]
             )
             + epidemiological_model_parameters[state]["sigma_s_uv"][index]
             * population_dynamics_dataframes[state]["Susceptible_UV"].iloc[-1]
@@ -88,8 +93,8 @@ class PopulationDynamicsComputer:
             - beta
             * population_dynamics_dataframes[state]["Susceptible_FV"].iloc[-1]
             * (
-                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                    ** epidemiological_model_parameters[state]["alpha"][index]
+                population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                ** epidemiological_model_parameters[state]["alpha"][index]
             )
             / state_populations[state]
             + epidemiological_model_parameters[state]["sigma_s_fv"][index]
@@ -105,8 +110,8 @@ class PopulationDynamicsComputer:
             - beta
             * population_dynamics_dataframes[state]["Susceptible_BV"].iloc[-1]
             * (
-                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                    ** epidemiological_model_parameters[state]["alpha"][index]
+                population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                ** epidemiological_model_parameters[state]["alpha"][index]
             )
             / state_populations[state]
             + epidemiological_model_parameters[state]["sigma_s_bv"][index]
@@ -116,9 +121,9 @@ class PopulationDynamicsComputer:
         )
 
         number_of_susceptible_individuals = (
-                number_of_unvaccinated_susceptible_individuals
-                + number_of_fully_vaccinated_susceptible_individuals
-                + number_of_booster_vaccinated_susceptible_individuals
+            number_of_unvaccinated_susceptible_individuals
+            + number_of_fully_vaccinated_susceptible_individuals
+            + number_of_booster_vaccinated_susceptible_individuals
         )
 
         # Exposed Compartment
@@ -127,18 +132,18 @@ class PopulationDynamicsComputer:
             + beta
             * population_dynamics_dataframes[state]["Susceptible_UV"].iloc[-1]
             * (
-                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                    ** epidemiological_model_parameters[state]["alpha"][index]
+                population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                ** epidemiological_model_parameters[state]["alpha"][index]
             )
             / state_populations[state]
             + (
-                    beta
-                    * population_dynamics_dataframes[state]["Recovered_UV"].iloc[-1]
-                    * (
-                            population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                            ** epidemiological_model_parameters[state]["alpha"][index]
-                    )
-                    / state_populations[state]
+                beta
+                * population_dynamics_dataframes[state]["Recovered_UV"].iloc[-1]
+                * (
+                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    ** epidemiological_model_parameters[state]["alpha"][index]
+                )
+                / state_populations[state]
             )
             - epidemiological_model_parameters[state]["zeta_s_uv"][index]
             * population_dynamics_dataframes[state]["Exposed_UV"].iloc[-1]
@@ -157,18 +162,18 @@ class PopulationDynamicsComputer:
             + beta
             * population_dynamics_dataframes[state]["Susceptible_FV"].iloc[-1]
             * (
-                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                    ** epidemiological_model_parameters[state]["alpha"][index]
+                population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                ** epidemiological_model_parameters[state]["alpha"][index]
             )
             / state_populations[state]
             + (
-                    beta
-                    * population_dynamics_dataframes[state]["Recovered_FV"].iloc[-1]
-                    * (
-                            population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                            ** epidemiological_model_parameters[state]["alpha"][index]
-                    )
-                    / state_populations[state]
+                beta
+                * population_dynamics_dataframes[state]["Recovered_FV"].iloc[-1]
+                * (
+                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    ** epidemiological_model_parameters[state]["alpha"][index]
+                )
+                / state_populations[state]
             )
             - epidemiological_model_parameters[state]["zeta_s_fv"][index]
             * population_dynamics_dataframes[state]["Exposed_FV"].iloc[-1]
@@ -189,18 +194,18 @@ class PopulationDynamicsComputer:
             + beta
             * population_dynamics_dataframes[state]["Susceptible_BV"].iloc[-1]
             * (
-                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                    ** epidemiological_model_parameters[state]["alpha"][index]
+                population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                ** epidemiological_model_parameters[state]["alpha"][index]
             )
             / state_populations[state]
             + (
-                    beta
-                    * population_dynamics_dataframes[state]["Recovered_BV"].iloc[-1]
-                    * (
-                            population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                            ** epidemiological_model_parameters[state]["alpha"][index]
-                    )
-                    / state_populations[state]
+                beta
+                * population_dynamics_dataframes[state]["Recovered_BV"].iloc[-1]
+                * (
+                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    ** epidemiological_model_parameters[state]["alpha"][index]
+                )
+                / state_populations[state]
             )
             - epidemiological_model_parameters[state]["zeta_s_bv"][index]
             * population_dynamics_dataframes[state]["Exposed_BV"].iloc[-1]
@@ -215,9 +220,9 @@ class PopulationDynamicsComputer:
         )
 
         number_of_exposed_individuals = (
-                number_of_unvaccinated_exposed_individuals
-                + number_of_fully_vaccinated_exposed_individuals
-                + number_of_booster_vaccinated_exposed_individuals
+            number_of_unvaccinated_exposed_individuals
+            + number_of_fully_vaccinated_exposed_individuals
+            + number_of_booster_vaccinated_exposed_individuals
         )
 
         # Infected Compartment
@@ -264,9 +269,9 @@ class PopulationDynamicsComputer:
         )
 
         number_of_infected_individuals = (
-                number_of_unvaccinated_infected_individuals
-                + number_of_fully_vaccinated_infected_individuals
-                + number_of_booster_vaccinated_infected_individuals
+            number_of_unvaccinated_infected_individuals
+            + number_of_fully_vaccinated_infected_individuals
+            + number_of_booster_vaccinated_infected_individuals
         )
 
         # DOUBLE CHECK:
@@ -319,22 +324,22 @@ class PopulationDynamicsComputer:
         )
 
         number_of_hospitalized_individuals = (
-                number_of_unvaccinated_hospitalized_individuals
-                + number_of_fully_vaccinated_hospitalized_individuals
-                + number_of_booster_vaccinated_hospitalized_individuals
+            number_of_unvaccinated_hospitalized_individuals
+            + number_of_fully_vaccinated_hospitalized_individuals
+            + number_of_booster_vaccinated_hospitalized_individuals
         )
 
         # Recovered Compartment
         number_of_unvaccinated_recovered_individuals = int(
             population_dynamics_dataframes[state]["Recovered_UV"].iloc[-1]
             - (
-                    beta
-                    * population_dynamics_dataframes[state]["Recovered_UV"].iloc[-1]
-                    * (
-                            population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                            ** epidemiological_model_parameters[state]["alpha"][index]
-                    )
-                    / state_populations[state]
+                beta
+                * population_dynamics_dataframes[state]["Recovered_UV"].iloc[-1]
+                * (
+                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    ** epidemiological_model_parameters[state]["alpha"][index]
+                )
+                / state_populations[state]
             )
             + epidemiological_model_parameters[state]["sigma_r_uv"][index]
             * population_dynamics_dataframes[state]["Exposed_UV"].iloc[-1]
@@ -349,13 +354,13 @@ class PopulationDynamicsComputer:
         number_of_fully_vaccinated_recovered_individuals = int(
             population_dynamics_dataframes[state]["Recovered_FV"].iloc[-1]
             - (
-                    beta
-                    * population_dynamics_dataframes[state]["Recovered_FV"].iloc[-1]
-                    * (
-                            population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                            ** epidemiological_model_parameters[state]["alpha"][index]
-                    )
-                    / state_populations[state]
+                beta
+                * population_dynamics_dataframes[state]["Recovered_FV"].iloc[-1]
+                * (
+                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    ** epidemiological_model_parameters[state]["alpha"][index]
+                )
+                / state_populations[state]
             )
             + epidemiological_model_parameters[state]["sigma_r_fv"][index]
             * population_dynamics_dataframes[state]["Exposed_FV"].iloc[-1]
@@ -372,13 +377,13 @@ class PopulationDynamicsComputer:
         number_of_booster_vaccinated_recovered_individuals = int(
             population_dynamics_dataframes[state]["Recovered_BV"].iloc[-1]
             - (
-                    beta
-                    * population_dynamics_dataframes[state]["Recovered_BV"].iloc[-1]
-                    * (
-                            population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                            ** epidemiological_model_parameters[state]["alpha"][index]
-                    )
-                    / state_populations[state]
+                beta
+                * population_dynamics_dataframes[state]["Recovered_BV"].iloc[-1]
+                * (
+                    population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    ** epidemiological_model_parameters[state]["alpha"][index]
+                )
+                / state_populations[state]
             )
             + epidemiological_model_parameters[state]["sigma_r_bv"][index]
             * population_dynamics_dataframes[state]["Exposed_BV"].iloc[-1]
@@ -391,9 +396,9 @@ class PopulationDynamicsComputer:
         )
 
         number_of_recovered_individuals = (
-                number_of_unvaccinated_recovered_individuals
-                + number_of_fully_vaccinated_recovered_individuals
-                + number_of_booster_vaccinated_recovered_individuals
+            number_of_unvaccinated_recovered_individuals
+            + number_of_fully_vaccinated_recovered_individuals
+            + number_of_booster_vaccinated_recovered_individuals
         )
 
         # Deceased Compartment
@@ -422,30 +427,24 @@ class PopulationDynamicsComputer:
         )
 
         number_of_deceased_individuals = (
-                number_of_unvaccinated_deceased_individuals
-                + number_of_fully_vaccinated_deceased_individuals
-                + number_of_booster_vaccinated_deceased_individuals
+            number_of_unvaccinated_deceased_individuals
+            + number_of_fully_vaccinated_deceased_individuals
+            + number_of_booster_vaccinated_deceased_individuals
         )
 
         # Population Dynamics by Vaccination Status
         number_of_unvaccinated_individuals = int(
-            population_dynamics_dataframes[state]["unvaccinated_individuals"].iloc[
-                -1
-            ]
+            population_dynamics_dataframes[state]["unvaccinated_individuals"].iloc[-1]
             - percentage_unvaccinated_to_fully_vaccinated
-            * population_dynamics_dataframes[state][
-                "unvaccinated_individuals"
-            ].iloc[-1]
+            * population_dynamics_dataframes[state]["unvaccinated_individuals"].iloc[-1]
         )
 
         number_of_fully_vaccinated_individuals = int(
-            population_dynamics_dataframes[state][
-                "fully_vaccinated_individuals"
-            ].iloc[-1]
+            population_dynamics_dataframes[state]["fully_vaccinated_individuals"].iloc[
+                -1
+            ]
             + percentage_unvaccinated_to_fully_vaccinated
-            * population_dynamics_dataframes[state][
-                "unvaccinated_individuals"
-            ].iloc[-1]
+            * population_dynamics_dataframes[state]["unvaccinated_individuals"].iloc[-1]
             - percentage_fully_vaccinated_to_booster_vaccinated
             * population_dynamics_dataframes[state][
                 "fully_vaccinated_individuals"
@@ -508,4 +507,7 @@ class PopulationDynamicsComputer:
             population_dynamics_dataframes[state],
         )
 
-        return epidemiological_model_parameters, population_dynamics_dataframes, new_cases
+        return (
+            population_dynamics_dataframes,
+            new_cases,
+        )

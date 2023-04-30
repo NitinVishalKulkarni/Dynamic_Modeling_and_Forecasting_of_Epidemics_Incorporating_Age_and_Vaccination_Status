@@ -17,7 +17,7 @@ class EpidemicSimulationMA(gym.Env):
     """This class implements the Disease Mitigation environment."""
 
     def __init__(self, env_config):
-        """This method initializes the environment.
+        """This method initializes the environment parameters.
 
         :param env_config: Dictionary containing the configuration for environment initialization.
         """
@@ -110,10 +110,10 @@ class EpidemicSimulationMA(gym.Env):
         self.population_dynamics_computer = PopulationDynamicsComputer()
 
     def reset(
-            self,
-            *,
-            seed: Optional[int] = None,
-            options: Optional[dict[str, Any]] = None,
+        self,
+        *,
+        seed: Optional[int] = None,
+        options: Optional[dict[str, Any]] = None,
     ):
         """This method resets the environment and returns the state as the observation.
 
@@ -205,9 +205,11 @@ class EpidemicSimulationMA(gym.Env):
             if actions[state] == 0:  # No NPM or PM taken. 7.3
                 beta = (
                     self.epidemiological_model_parameters[state]["beta"][index] * 1.4
-                    if self.population_dynamics_dataframes[state]["Infected"].iloc[-1] / self.state_populations[
-                        state] >= 0.001
-                    else self.epidemiological_model_parameters[state]["beta"][index] * 1.1
+                    if self.population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    / self.state_populations[state]
+                    >= 0.001
+                    else self.epidemiological_model_parameters[state]["beta"][index]
+                    * 1.1
                 )
 
                 economic_and_public_perception_rate = (
@@ -218,10 +220,13 @@ class EpidemicSimulationMA(gym.Env):
                         ].iloc[-1],
                         100,
                     )
-                    if self.population_dynamics_dataframes[state]["Infected"].iloc[-1] / self.state_populations[
-                        state] < 0.001
-                    else 0.999 * self.population_dynamics_dataframes[state]["Economic and Public Perception Rate"].iloc[
-                        -1]
+                    if self.population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    / self.state_populations[state]
+                    < 0.001
+                    else 0.999
+                    * self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
                 )
                 self.no_npm_pm_counters[state] += 1
                 self.sdm_counters[state] = 0
@@ -231,13 +236,13 @@ class EpidemicSimulationMA(gym.Env):
 
             elif actions[state] == 1:  # SDM
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.95
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.95
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.9965
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.9965
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] += 1
@@ -246,16 +251,16 @@ class EpidemicSimulationMA(gym.Env):
                 self.vaccination_mandate_counters[state] = 0
 
             elif (
-                    actions[state] == 2
+                actions[state] == 2
             ):  # Lockdown (Closure of non-essential business, schools, gyms...) 0.997
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.85
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.85
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.997
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.997
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] = 0
@@ -265,13 +270,13 @@ class EpidemicSimulationMA(gym.Env):
 
             elif actions[state] == 3:  # Public Mask Mandates 0.9975
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.925
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.925
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.9965
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.9965
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] = 0
@@ -281,13 +286,13 @@ class EpidemicSimulationMA(gym.Env):
 
             elif actions[state] == 4:  # Vaccination Mandates 0.994
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.95
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.95
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.994
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.994
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] = 0
@@ -297,13 +302,13 @@ class EpidemicSimulationMA(gym.Env):
 
             elif actions[state] == 5:  # SDM and Public Mask Mandates 0.9965
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.875
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.875
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.9965
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.9965
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] += 1
@@ -313,13 +318,13 @@ class EpidemicSimulationMA(gym.Env):
 
             elif actions[state] == 6:  # SDM and Vaccination Mandates 0.993
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.825
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.825
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.993
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.993
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] += 1
@@ -329,13 +334,13 @@ class EpidemicSimulationMA(gym.Env):
 
             elif actions[state] == 7:  # Lockdown and Public Mask Mandates 0.9965
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.75
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.75
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.994
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.994
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] = 0
@@ -345,13 +350,13 @@ class EpidemicSimulationMA(gym.Env):
 
             elif actions[state] == 8:  # Lockdown and Vaccination Mandates 0.993
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.80
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.80
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.993
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.993
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] = 0
@@ -360,16 +365,16 @@ class EpidemicSimulationMA(gym.Env):
                 self.vaccination_mandate_counters[state] += 1
 
             elif (
-                    actions[state] == 9
+                actions[state] == 9
             ):  # Public Mask Mandates and Vaccination Mandates 0.9935
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.90
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.90
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.9935
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.9935
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] = 0
@@ -378,16 +383,16 @@ class EpidemicSimulationMA(gym.Env):
                 self.vaccination_mandate_counters[state] += 1
 
             elif (
-                    actions[state] == 10
+                actions[state] == 10
             ):  # SDM, Public Mask Mandates and Vaccination Mandates 0.9925
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.60
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.60
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.9925
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.9925
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] += 1
@@ -396,16 +401,16 @@ class EpidemicSimulationMA(gym.Env):
                 self.vaccination_mandate_counters[state] += 1
 
             elif (
-                    actions[state] == 11
+                actions[state] == 11
             ):  # Lockdown, Public Mask Mandates and Vaccination Mandates 0.9925
                 beta = (
-                        self.epidemiological_model_parameters[state]["beta"][index] * 0.60
+                    self.epidemiological_model_parameters[state]["beta"][index] * 0.60
                 )
                 economic_and_public_perception_rate = (
-                        self.population_dynamics_dataframes[state][
-                            "Economic and Public Perception Rate"
-                        ].iloc[-1]
-                        * 0.9925
+                    self.population_dynamics_dataframes[state][
+                        "Economic and Public Perception Rate"
+                    ].iloc[-1]
+                    * 0.9925
                 )
                 self.no_npm_pm_counters[state] = 0
                 self.sdm_counters[state] = 0
@@ -416,17 +421,21 @@ class EpidemicSimulationMA(gym.Env):
             else:
                 print("Invalid Action")
 
-            self.epidemiological_model_parameters, self.population_dynamics_dataframes, self.new_cases = \
-                self.population_dynamics_computer.compute_population_dynamics(
-                    action=actions[state], beta=beta,
-                    environment_config=self.environment_config,
-                    epidemiological_model_data=self.epidemiological_model_data,
-                    epidemiological_model_parameters=self.epidemiological_model_parameters,
-                    new_cases=self.new_cases,
-                    population_dynamics_dataframes=self.population_dynamics_dataframes,
-                    state=state,
-                    state_populations=self.state_populations,
-                    timestep=self.timestep)
+            (
+                self.population_dynamics_dataframes,
+                self.new_cases,
+            ) = self.population_dynamics_computer.compute_population_dynamics(
+                action=actions[state],
+                beta=beta,
+                environment_config=self.environment_config,
+                epidemiological_model_data=self.epidemiological_model_data,
+                epidemiological_model_parameters=self.epidemiological_model_parameters,
+                new_cases=self.new_cases,
+                population_dynamics_dataframes=self.population_dynamics_dataframes,
+                state=state,
+                state_populations=self.state_populations,
+                timestep=self.timestep,
+            )
 
             self.population_dynamics_dataframes[state][
                 "Economic and Public Perception Rate"
@@ -451,16 +460,16 @@ class EpidemicSimulationMA(gym.Env):
             mask_mandate_min_period_violation = (
                 True
                 if (
-                        0 < self.mask_mandate_counters[state] < self.min_mask_mandate_period
+                    0 < self.mask_mandate_counters[state] < self.min_mask_mandate_period
                 )
                 else False
             )
             vaccination_mandate_min_period_violation = (
                 True
                 if (
-                        0
-                        < self.vaccination_mandate_counters[state]
-                        < self.min_vaccination_mandate_period
+                    0
+                    < self.vaccination_mandate_counters[state]
+                    < self.min_vaccination_mandate_period
                 )
                 else False
             )
@@ -487,8 +496,8 @@ class EpidemicSimulationMA(gym.Env):
             vaccination_mandate_max_period_violation = (
                 True
                 if (
-                        self.vaccination_mandate_counters[state]
-                        >= self.max_vaccination_mandate_period
+                    self.vaccination_mandate_counters[state]
+                    >= self.max_vaccination_mandate_period
                 )
                 else False
             )
@@ -506,11 +515,11 @@ class EpidemicSimulationMA(gym.Env):
             no_npm_pm_allowed = (
                 True
                 if (
-                        (not sdm_min_period_violation)
-                        and (not lockdown_min_period_violation)
-                        and (not mask_mandate_min_period_violation)
-                        and (not vaccination_mandate_min_period_violation)
-                        and (not no_npm_pm_max_period_violation)
+                    (not sdm_min_period_violation)
+                    and (not lockdown_min_period_violation)
+                    and (not mask_mandate_min_period_violation)
+                    and (not vaccination_mandate_min_period_violation)
+                    and (not no_npm_pm_max_period_violation)
                 )
                 else False
             )
@@ -518,9 +527,9 @@ class EpidemicSimulationMA(gym.Env):
             sdm_allowed = (
                 True
                 if (
-                        (not no_npm_pm_min_period_violation)
-                        and (not lockdown_min_period_violation)
-                        and (not sdm_max_period_violation)
+                    (not no_npm_pm_min_period_violation)
+                    and (not lockdown_min_period_violation)
+                    and (not sdm_max_period_violation)
                 )
                 else False
             )
@@ -528,9 +537,9 @@ class EpidemicSimulationMA(gym.Env):
             lockdown_allowed = (
                 True
                 if (
-                        (not no_npm_pm_min_period_violation)
-                        and (not sdm_min_period_violation)
-                        and (not lockdown_max_period_violation)
+                    (not no_npm_pm_min_period_violation)
+                    and (not sdm_min_period_violation)
+                    and (not lockdown_max_period_violation)
                 )
                 else False
             )
@@ -538,8 +547,8 @@ class EpidemicSimulationMA(gym.Env):
             mask_mandate_allowed = (
                 True
                 if (
-                        (not no_npm_pm_min_period_violation)
-                        and (not mask_mandate_max_period_violation)
+                    (not no_npm_pm_min_period_violation)
+                    and (not mask_mandate_max_period_violation)
                 )
                 else False
             )
@@ -547,8 +556,8 @@ class EpidemicSimulationMA(gym.Env):
             vaccination_mandate_allowed = (
                 True
                 if (
-                        (not no_npm_pm_min_period_violation)
-                        and (not vaccination_mandate_max_period_violation)
+                    (not no_npm_pm_min_period_violation)
+                    and (not vaccination_mandate_max_period_violation)
                 )
                 else False
             )
@@ -597,8 +606,8 @@ class EpidemicSimulationMA(gym.Env):
             # (and not required). We remove such actions from the set with by taking a difference between the sets.
             for i in range(5):
                 if (
-                        not self.allowed_actions[state][i]
-                        and not self.required_actions[state][i]
+                    not self.allowed_actions[state][i]
+                    and not self.required_actions[state][i]
                 ):
                     if actions_allowed is None:
                         break
@@ -630,12 +639,12 @@ class EpidemicSimulationMA(gym.Env):
 
             # Reward
             rewards[state] = (
-                    -self.infection_coefficient
-                    * self.population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                    / self.state_populations[state]
-                    + self.population_dynamics_dataframes[state][
-                        "Economic and Public Perception Rate"
-                    ].iloc[-1]
+                -self.infection_coefficient
+                * self.population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                / self.state_populations[state]
+                + self.population_dynamics_dataframes[state][
+                    "Economic and Public Perception Rate"
+                ].iloc[-1]
             )
 
             state_observation = [
@@ -653,9 +662,9 @@ class EpidemicSimulationMA(gym.Env):
             terminations[state] = (
                 True
                 if (
-                        self.population_dynamics_dataframes[state]["Infected"].iloc[-1]
-                        >= 0.99 * self.state_populations[state]
-                        or self.timestep >= self.max_timesteps
+                    self.population_dynamics_dataframes[state]["Infected"].iloc[-1]
+                    >= 0.99 * self.state_populations[state]
+                    or self.timestep >= self.max_timesteps
                 )
                 else False
             )
