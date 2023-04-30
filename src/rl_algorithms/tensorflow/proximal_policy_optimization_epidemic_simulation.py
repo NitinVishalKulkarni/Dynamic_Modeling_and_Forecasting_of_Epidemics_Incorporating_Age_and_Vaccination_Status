@@ -253,8 +253,8 @@ class ProximalPolicyOptimization:
             shape=(self.time_period, self.environment.observation_space.n),
             dtype=tf.float32,
         )
-        common1 = LSTM(512, return_sequences=True)(observation_input)
-        common2 = LSTM(256, return_sequences=False)(common1)
+        common1 = LSTM(256, return_sequences=True)(observation_input)
+        common2 = LSTM(128, return_sequences=False)(common1)
         # common3 = Dense(units=128, activation=tf.tanh)
 
         logits = Dense(self.environment.action_space.n)(common2)
@@ -366,7 +366,7 @@ class ProximalPolicyOptimization:
     def train(self):
         """This method performs the agent training."""
 
-        with tf.device("/device:GPU:0"):
+        with tf.device("/device:CPU:0"):
             # Initialize the observation, episode return and episode length
             observation, info = self.environment.reset()
             observation = [observation for _ in range(self.time_period)]
@@ -897,7 +897,7 @@ epidemic_simulation_environment = EpidemicSimulation(
 
 ppo_initialization_parameters = {
     "time_period": 14,
-    "steps_per_epoch": 10000,
+    "steps_per_epoch": 1000,
     "number_of_epochs": 50,
     "gamma": 0.999,
     "clip_ratio": 0.2,

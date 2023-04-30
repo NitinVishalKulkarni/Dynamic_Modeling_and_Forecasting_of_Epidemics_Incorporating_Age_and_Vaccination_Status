@@ -6,17 +6,17 @@ from stable_baselines3.common.env_util import make_vec_env
 import time
 
 # Parallel environments
-number_of_training_environments = 1
+number_of_training_environments = 4
 training_environment = make_vec_env(
     "CartPole-v1",
     n_envs=number_of_training_environments,
-    env_kwargs={"max_episode_steps": 10000},
+    env_kwargs={"max_episode_steps": 500},
 )
 
 model = PPO("MlpPolicy", training_environment, verbose=1)
 
 start = time.time()
-model.learn(total_timesteps=100 * 10000)
+model.learn(total_timesteps=25 * 10_000)
 print("Training Time:", time.time() - start)
 
 # model.save("ppo_cartpole")

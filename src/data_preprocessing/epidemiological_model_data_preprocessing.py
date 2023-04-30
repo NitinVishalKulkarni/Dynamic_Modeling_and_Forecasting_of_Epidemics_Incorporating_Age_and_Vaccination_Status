@@ -1,5 +1,6 @@
 import pandas as pd
 pd.set_option('display.max_rows', None)
+from src.settings import DATA_DIR
 
 
 class EpidemiologicalDataPreProcessing:
@@ -17,9 +18,9 @@ class EpidemiologicalDataPreProcessing:
         self.epidemiological_data = self.epidemiological_data.iloc[79:474]
         self.epidemiological_data.reset_index(inplace=True)
 
-        self.cases_by_vaccination = pd.read_csv('cases_by_vaccination_and_booster.csv').iloc[:395]
-        self.deaths_by_vaccination = pd.read_csv('deaths_by_vaccination_and_booster.csv').iloc[:395]
-        self.hospitalizations_by_vaccination = pd.read_csv('hospitalizations_by_vaccination_and_booster.csv').iloc[:395]
+        self.cases_by_vaccination = pd.read_csv(f'{DATA_DIR}/Old Data/data_by_vaccination_status/booster/cases_by_vaccination_and_booster.csv').iloc[:395]
+        self.deaths_by_vaccination = pd.read_csv(f'{DATA_DIR}/Old Data/data_by_vaccination_status/booster/deaths_by_vaccination_and_booster.csv').iloc[:395]
+        self.hospitalizations_by_vaccination = pd.read_csv(f'{DATA_DIR}/Old Data/data_by_vaccination_status/booster/hospitalizations_by_vaccination_and_booster.csv').iloc[:395]
         self.population = population
 
     def data_preprocessing(self):
@@ -242,7 +243,7 @@ class EpidemiologicalDataPreProcessing:
 
         # Saving the epidemiological model data.
         self.epidemiological_data.iloc[:395].to_csv(
-            'epidemiological_model_data_new.csv', index=False,
+            f'{DATA_DIR}/updated_data/epidemiological_model_data/pennsylvania.csv', index=False,
             columns=['date', 'unvaccinated_individuals', 'fully_vaccinated_individuals',
                      'boosted_individuals', 'unvaccinated_compartment_total',
                      'fully_vaccinated_compartment_total', 'booster_vaccinated_compartment_total',
@@ -256,5 +257,5 @@ class EpidemiologicalDataPreProcessing:
                      'Deceased_BV'])
 
 
-epidemiological_data_preprocessing = EpidemiologicalDataPreProcessing()
+epidemiological_data_preprocessing = EpidemiologicalDataPreProcessing(filepath=f'{DATA_DIR}/updated_data/processed_state_data/pennsylvania.csv')
 epidemiological_data_preprocessing.data_preprocessing()

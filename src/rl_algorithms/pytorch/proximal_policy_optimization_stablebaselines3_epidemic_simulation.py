@@ -1,3 +1,5 @@
+import sys
+
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
 from src.epidemic_simulation_environment.epidemic_simulation_environment import EpidemicSimulation
 import stable_baselines3
@@ -9,14 +11,12 @@ import time
 from stable_baselines3.common.monitor import Monitor
 from sb3_contrib import RecurrentPPO
 
+environment_configuration = {'data_path': f"../../../Data/Updated Data/epidemiological_model_data/",
+                             'state_name': 'new_york', 'state_population': 19_453_734, 'start_date': '11/01/2021'}
+
 
 def create_env():
-    env = EpidemicSimulation(
-        data_path=f"../../../Data/Updated Data/epidemiological_model_data/",
-        state_name="new_york",
-        state_population=19_453_734,
-        start_date="11/01/2021",
-    )
+    env = EpidemicSimulation(env_config=environment_configuration)
 
     class SB3Observation(gym.ObservationWrapper):
         def __init__(self, env):
@@ -36,7 +36,7 @@ def create_env():
 if __name__ == "__main__":
     check_env(create_env())
 
-    env = SubprocVecEnv([create_env] * 8, start_method="spawn")
+    env = SubprocVecEnv([create_env] * 32, start_method="spawn")
     env = VecFrameStack(env, n_stack=14)
     print(env.reset().shape)
 

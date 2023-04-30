@@ -3,17 +3,22 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+from src.settings import DATA_DIR
 
 
-class DataScrapper:
-    """This class implements a data scrapper which collects data on cases and outcomes from 'worldometers.info' """
+# noinspection DuplicatedCode
+class CasesAndOutcomesDataScrapper:
+    """This class implements a data scrapper which collects data on cases and outcomes from 'worldometers.info'."""
 
     def __init__(
-        self,
-        website_url="https://www.worldometers.info/coronavirus/country/us",
-        output_path="../Data/Updated Data/cases_and_outcomes/",
+            self,
+            website_url="https://www.worldometers.info/coronavirus/country/us",
+            output_path="../Data/Updated Data/cases_and_outcomes/",
     ):
-        """This method initializes the required parameters."""
+        """This method initializes the required parameters.
+
+        :param website_url: String - Hyperlink of worldometers website's COVID-19 page for the United States.
+        :param output_path: String - Path of the directory in which to store the scrapped data."""
 
         self.website_url = website_url
         self.output_path = output_path
@@ -35,6 +40,7 @@ class DataScrapper:
             state_data_website_url = requests.get(state_data_links[state]).text
             state_data_soup = BeautifulSoup(state_data_website_url, "html.parser")
 
+            self.data = {}
             self.scrape_total_cases_data(soup=state_data_soup)
             self.scrape_new_cases_data(soup=state_data_soup)
             self.scrape_active_cases_data(soup=state_data_soup)
@@ -45,7 +51,9 @@ class DataScrapper:
             dataset.to_csv(f"{self.output_path}{state}.csv", index=False)
 
     def scrape_total_cases_data(self, soup):
-        """This method scrapes the website for the data on total COVID-19 cases."""
+        """This method scrapes the website for the data on total COVID-19 cases.
+
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
 
         data = soup.find(
             "script",
@@ -84,7 +92,9 @@ class DataScrapper:
         self.data["Total Cases (Logarithmic)"] = logarithmic_data_values
 
     def scrape_new_cases_data(self, soup):
-        """This method scrapes the website for the data on new COVID-19 cases."""
+        """This method scrapes the website for the data on new COVID-19 cases.
+
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
 
         data = soup.find(
             "script",
@@ -121,7 +131,9 @@ class DataScrapper:
         self.data["Daily Cases (7-Day Moving Average)"] = seven_day_moving_average
 
     def scrape_active_cases_data(self, soup):
-        """This method scrapes the website for the data on active COVID-19 cases."""
+        """This method scrapes the website for the data on active COVID-19 cases.
+
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
 
         data = soup.find(
             "script",
@@ -147,7 +159,9 @@ class DataScrapper:
         self.data["Active Cases"] = active_cases
 
     def scrape_total_deaths_data(self, soup):
-        """This method scrapes the website for the data on total COVID-19 deaths."""
+        """This method scrapes the website for the data on total COVID-19 deaths.
+
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
 
         data = soup.find(
             "script",
@@ -184,7 +198,9 @@ class DataScrapper:
         self.data["Total Deaths (Logarithmic)"] = logarithmic_data_values
 
     def scrape_new_deaths_data(self, soup):
-        """This method scrapes the website for the data on new COVID-19 deaths."""
+        """This method scrapes the website for the data on new COVID-19 deaths.
+
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
 
         data = soup.find(
             "script",
@@ -221,7 +237,9 @@ class DataScrapper:
         self.data["Daily Deaths (7-Day Moving Average)"] = seven_day_moving_average
 
     def create_final_dataset(self):
-        """This method creates the final dataset."""
+        """This method creates the final dataset.
+
+        :returns dataframe: Pandas DataFrame - """
 
         dataframe = pd.DataFrame.from_dict(self.data)
         dataframe["Dates"] = pd.to_datetime(dataframe["Dates"])
@@ -229,8 +247,8 @@ class DataScrapper:
         return dataframe
 
 
-data_scrapper = DataScrapper(
+cases_and_outcomes_data_scrapper = CasesAndOutcomesDataScrapper(
     website_url="https://www.worldometers.info/coronavirus/country/us",
-    output_path="../Data/Updated Data/cases_and_outcomes/",
+    output_path=f"{DATA_DIR}/updated_data/cases_and_outcomes/",
 )
-data_scrapper.scrape_all_data()
+cases_and_outcomes_data_scrapper.scrape_all_data()
