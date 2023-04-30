@@ -66,7 +66,6 @@ default_state = {
             mask: 30,
         },
         max_steps: 365,
-        initial_population: 1000,
     },
     action_mask: [1, 1, 1, 1],
     step_count: 0,

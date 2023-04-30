@@ -1,6 +1,6 @@
 from typing import Sequence
 import numpy as np
-from seihrd.base_models import State, A, a2i
+from seihrd.sim.base_models import State, A, a2i
 
 
 class ActionTransitions:
@@ -13,6 +13,7 @@ class ActionTransitions:
         3. action_in_effect
         4. action_cool_down
         5. action_mask
+        6. params.vfv
     """
 
     def __init__(self):
@@ -37,8 +38,8 @@ class ActionTransitions:
 
     def __call__(self, state: State, action: Sequence[int]):
         s = state.copy(deep=True)
-        in_effect = np.array(s.action_in_effect, dtype=np.float)
-        cooldown = np.array(s.action_cool_down, dtype=np.float)
+        in_effect = np.array(s.action_in_effect, dtype=float)
+        cooldown = np.array(s.action_cool_down, dtype=float)
         max_in_effect = np.array(s.hyper_parameters.action_durations)
         max_cooldown = np.array(s.hyper_parameters.action_cool_downs)
 
@@ -47,18 +48,22 @@ class ActionTransitions:
         # Apply actions that are already in effect.
         action = (action | (in_effect > 0)) * 1
 
-        """ beta & epp """
+        """ BETA & EPP """
         if action.sum() == 0:
-            # TODO: Apply the weird logic for noop.
-            beta_m = 1
-            epp_m = 1
+            if s.populations.infected.total() / s.populations.total() < 0.001:
+                beta_m = 1.1
+                epp_m = 1.005
+            else:
+                beta_m = 1.4
+                epp_m = 0.999
         else:
             beta_m, epp_m = self.multiplier[tuple(action)]
 
         s.params.beta *= beta_m
         s.epp *= epp_m
+        s.epp = min(s.epp, 100)
 
-        """ action_in_effect """
+        """ IN EFFECT """
         # Increment in_effect
         in_effect += action
         # If max duration reached, set in_effect = 0
@@ -66,8 +71,9 @@ class ActionTransitions:
         in_effect *= ~finished
 
         s.action_in_effect = in_effect
+        # AD: Should we reverse the effect after the in_effect is done?
 
-        """ cooldown """
+        """ COOLDOWN """
         # Increment cool-downs for already cooling actions.
         cooldown += cooldown > 0
         # cool-down = 1 for newly finished actions.
@@ -77,7 +83,7 @@ class ActionTransitions:
 
         s.action_cool_down = cooldown
 
-        """ action_mask """
+        """ ACTION MASK """
         # An action is legal only if in_effect = 0 and cooldown = 0
         mask = (cooldown + in_effect) == 0
         # Additionally, if L is in_effect, S is illegal.
@@ -86,7 +92,15 @@ class ActionTransitions:
 
         s.action_mask = mask * 1
 
+        """ VFV """
+        # AD: Nitin, can you please explain?
+        if tuple(action) in (  # M, SM, SV, LM
+            # S L  M  V
+            (0, 0, 1, 0),
+            (1, 0, 1, 0),
+            (1, 0, 0, 1),
+            (0, 1, 1, 0),
+        ):
+            s.params.vfv = 0.007084760245099044
+
         return s
-
-
-# TODO: Write tests for sanity check.

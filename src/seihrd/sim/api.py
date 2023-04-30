@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket
-from seihrd.seihrd_env import SeihrdEnv
+from seihrd.sim.seihrd_env import SeihrdEnv
 
 
 app = FastAPI()

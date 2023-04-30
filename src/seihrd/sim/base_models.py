@@ -33,7 +33,6 @@ class SimHyperParams(BaseModel):
     action_durations: Sequence[int]
     action_cool_downs: Sequence[int]
     max_steps: int
-    initial_population: int = 1000
 
 
 class SubCompPopulations(BaseModel, DictLike):
@@ -83,15 +82,15 @@ class Params(BaseModel, DictLike):
     vb: float
     alpha: float
     beta: float
-    e_s: SubCompParams
-    e_i: SubCompParams
-    i_r: SubCompParams
-    i_h: SubCompParams
-    i_d: SubCompParams
-    e2_i: SubCompParams
-    h_r: SubCompParams
-    h_d: SubCompParams
-    e_r: SubCompParams
+    e_s: SubCompParams  # sigma_s
+    e_i: SubCompParams  # zeta_s
+    i_r: SubCompParams  # gamma_i
+    i_h: SubCompParams  # delta
+    i_d: SubCompParams  # mu_i
+    e2_i: SubCompParams  # zeta_r
+    h_r: SubCompParams  # gamma_h
+    h_d: SubCompParams  # mu_h
+    e_r: SubCompParams  # sigma_r
 
     def noisy(self):
         for f in self.__fields__:
