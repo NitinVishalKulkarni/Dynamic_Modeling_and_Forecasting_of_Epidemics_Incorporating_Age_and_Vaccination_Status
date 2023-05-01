@@ -5,7 +5,7 @@ from gymnasium import spaces
 import numpy as np
 import pandas as pd
 from src.settings import DATA_DIR
-from parameter_initializer import ParameterInitializer
+from src.utilities.parameter_initializer import ParameterInitializer
 from population_dynamics_computer import PopulationDynamicsComputer
 
 pd.set_option("display.max_columns", 50)
