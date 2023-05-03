@@ -449,14 +449,13 @@ class ParameterInitializer:
     def initialize_initial_epidemiological_model_parameters(
         constrained_beta=True,
     ):
-        """This method initializes the parameter values for the epidemiological model for the epidemiological model
+        """This method initializes the initial epidemiological model parameter values for the epidemiological model
         parameter computer.
 
         :return parameters: Parameters for the epidemiological model."""
 
         # Set parameters including bounds
         parameters = Parameters()
-        #         pars.add('constraint_param', value=1, min=0, max=1, vary=True)
 
         # Exposure rate.
         if constrained_beta:
@@ -469,25 +468,21 @@ class ParameterInitializer:
 
         # Infection rates for exposed individuals.
         parameters.add("zeta_uv", value=0.02, min=0, max=0.05)
-        #         parameters.add('zeta_fv', value=0.014, min=0, max=0.015)
         parameters.add("zeta_fv", value=0.003, min=0, max=0.007)
         parameters.add("zeta_bv", value=0.0003, min=0, max=0.007)
 
         # Hospitalization rates for infected individuals.
         parameters.add("delta_uv", value=0.00216666, min=0.0, max=0.00444444)
-        #         parameters.add('delta_fv', value=0.00116666, min=0.0, max=0.00444444)
         parameters.add("delta_fv", value=0.000516666, min=0.0, max=0.00444444)
         parameters.add("delta_bv", value=0.000516666, min=0.0, max=0.00444444)
 
         # Recovery rates for infected individuals.
         parameters.add("gamma_i_uv", value=0.05, min=0.040, max=0.055)
-        #         parameters.add('gamma_i_bv', value=0.05, min=0.0425, max=0.055)
         parameters.add("gamma_i_fv", value=0.053, min=0.045, max=0.055)
         parameters.add("gamma_i_bv", value=0.053, min=0.0475, max=0.065)
 
         # Recovery rates for hospitalized individuals.
         parameters.add("gamma_h_uv", value=0.0277777, min=0.025, max=0.055)
-        #         parameters.add('gamma_h_bv', value=0.0277777, min=0.025, max=0.055)
         parameters.add("gamma_h_fv", value=0.0377777, min=0.03, max=0.055)
         parameters.add("gamma_h_bv", value=0.0377777, min=0.03, max=0.065)
 
@@ -495,7 +490,6 @@ class ParameterInitializer:
         parameters.add(
             "mu_i_uv", value=0.00155555555, min=0.00005555555, max=0.0033333333
         )
-        #         parameters.add('mu_i_bv', value=0.00045555555, min=0.00005555555, max=0.0033333333)
         parameters.add(
             "mu_i_fv", value=0.000005555555, min=0.000005555555, max=0.0033333333
         )
@@ -505,25 +499,20 @@ class ParameterInitializer:
 
         # Death rates for hospitalized individuals.
         parameters.add("mu_h_uv", value=0.00877777, min=0.00277777, max=0.01388888)
-        #         parameters.add('mu_h_bv', value=0.00477777 , min=0.00277777, max=0.01388888)
         parameters.add("mu_h_fv", value=0.00277777, min=0.00077777, max=0.01388888)
         parameters.add("mu_h_bv", value=0.00087777, min=0.000177777, max=0.01388888)
 
         # Rate at which previously exposed individuals become susceptible again.
         parameters.add("exp_to_suv", value=0.25, min=0.0, max=1)
-        #         parameters.add('exp_to_spv', value=0.4 , min=0.0, max=1)
         parameters.add("exp_to_sfv", value=0.5, min=0.0, max=1)
         parameters.add("exp_to_sbv", value=0.5, min=0.0, max=1)
 
         # Parameters to allow recovered individuals to get reinfected
-        #         parameters.add('beta_r', value=3, min=-np.inf, max=np.inf)
         parameters.add("zeta_ruv", value=0.007, min=0, max=0.05)
-        #         parameters.add('zeta_rfv', value=0.007, min=0, max=0.014)
         parameters.add("zeta_rfv", value=0.004, min=0, max=0.007)
         parameters.add("zeta_rbv", value=0.004, min=0, max=0.007)
 
         parameters.add("exp_to_ruv", value=0.25, min=0.0, max=1)
-        #         parameters.add('exp_to_rpv', value=0.4 , min=0.0, max=1)
         parameters.add("exp_to_rfv", value=0.5, min=0.0, max=1)
         parameters.add("exp_to_rbv", value=0.5, min=0.0, max=1)
 

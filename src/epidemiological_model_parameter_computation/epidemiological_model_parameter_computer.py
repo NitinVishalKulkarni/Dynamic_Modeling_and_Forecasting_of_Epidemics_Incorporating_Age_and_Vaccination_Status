@@ -1,12 +1,14 @@
 # Imports
-import sys
+import json
+from collections import defaultdict
+from time import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from lmfit import minimize, fit_report
 from scipy.integrate import odeint, solve_ivp
-import matplotlib.pyplot as plt
-from lmfit import minimize
-from time import time
+
 from src.settings import DATA_DIR
 from src.utilities.parameter_initializer import ParameterInitializer
 
@@ -28,20 +30,18 @@ class EpidemiologicalModelParameterComputer:
         )
 
         self.states = self.parameter_initializer.initialize_state_names()
-        # print("State Names:", self.states)
+        print("State Names:", self.states)
 
         self.epidemiological_model_data = (
             self.parameter_initializer.initialize_epidemiological_model_data()
         )
-        # print("Epidemiological Model Data:\n", self.epidemiological_model_data)
+        print("Epidemiological Model Data:\n", self.epidemiological_model_data)
 
         self.state_populations = (
             self.parameter_initializer.initialize_state_populations()
         )
-        # print("\nState Populations:\n", self.state_populations)
+        print("\nState Populations:\n", self.state_populations)
 
-        # self.epidemiological_data = pd.read_csv(data_path)
-        # self.population = population
         self.epidemiological_model_parameters = self.parameter_initializer.initialize_initial_epidemiological_model_parameters(
             self.parameter_computer_configuration["constrained_beta"]
         )
@@ -50,30 +50,7 @@ class EpidemiologicalModelParameterComputer:
             "epidemiological_compartment_names"
         ]
 
-        # self.epidemiological_data = self.epidemiological_data.iloc[
-        #                             data_split_min:data_split_max
-        #                             ]
-        #
-        # self.epidemiological_compartment_values = self.epidemiological_data[
-        #     self.epidemiological_compartment_names
-        # ].values
-        # self.t = np.linspace(
-        #     0,
-        #     self.epidemiological_data.shape[0] - 1,
-        #     self.epidemiological_data.shape[0],
-        # )
-
-        # Initial values of population dynamics.
-        # self.y0 = [
-        #     self.epidemiological_model_data[self.states[0]][
-        #         f"{self.epidemiological_compartment_names[i]}"
-        #     ].iloc[0]
-        #     for i in range(len(self.epidemiological_compartment_names))
-        # ]
-
         self.original_residual = None
-
-        self.counter = 1
 
     def compute_epidemiological_model_parameters(self):
         """This method computes the epidemiological model parameters and saves them..."""
@@ -86,18 +63,19 @@ class EpidemiologicalModelParameterComputer:
             print("\nState:", state)
             state_runtime_start = time()
 
+            model_predictions = []
+            original_residuals = []
+            total_residual = 0
+            state_parameters = defaultdict(list)
+
+            # We compute the epidemiological model parameters every fixed number of days determined by
+            # (parameter_computation_timeframe).
             number_of_splits = int(
                 np.ceil(
                     self.epidemiological_model_data[state].shape[0]
                     / parameter_computation_timeframe
                 )
             )
-
-            model_predictions = []
-            data_values = []
-            original_residuals = []
-            total_residual = 0
-            param_dict = {}
 
             for split_number in range(number_of_splits):
                 print(f"Split {split_number + 1} of {number_of_splits}:\n")
@@ -116,12 +94,15 @@ class EpidemiologicalModelParameterComputer:
                     self.epidemiological_compartment_names
                 ].values
 
+                # Times at which to store the computed solution. This also determines the interval of integration
+                # (t0, tf). The solver starts with t=t0 and integrates until it reaches t=tf.
                 t = np.linspace(
                     0,
                     split_epidemiological_data.shape[0] - 1,
                     split_epidemiological_data.shape[0],
                 )
 
+                # Initial values.
                 y0 = [
                     split_epidemiological_data[
                         f"{self.epidemiological_compartment_names[i]}"
@@ -131,34 +112,34 @@ class EpidemiologicalModelParameterComputer:
 
                 split_runtime_start = time()
 
+                # Note: Args are the additional positional arguments to be passed to self.residual_solve_ivp
                 model_fit_solve_ivp = minimize(
                     self.residual_solve_ivp,
                     self.epidemiological_model_parameters,
                     args=(
                         t,
                         epidemiological_model_compartment_values,
-                        "RK45",
-                        1,
+                        self.parameter_computer_configuration["integration_method"],
+                        self.parameter_computer_configuration[
+                            "differential_equation_version"
+                        ],
                         state,
                         y0,
                     ),
-                    method="leastsq",
-                    nan_policy="omit",
+                    method=self.parameter_computer_configuration["fitting_method"],
+                    nan_policy=self.parameter_computer_configuration["nan_policy"],
                 )
 
                 print("Split Runtime:", time() - split_runtime_start, "seconds")
 
-                model_pred = (
+                model_prediction = (
                     epidemiological_model_compartment_values
                     + self.original_residual.reshape(
                         epidemiological_model_compartment_values.shape
                     )
                 )
 
-                data = epidemiological_model_compartment_values
-
-                model_predictions.append(model_pred)
-                data_values.append(data)
+                model_predictions.append(model_prediction)
 
                 original_residuals.append(self.original_residual)
 
@@ -167,32 +148,42 @@ class EpidemiologicalModelParameterComputer:
                     np.sum(np.abs(self.original_residual)),
                 )
 
-                #     print(f'\n\nModel Fit {split_number}:\n', report_fit(model_fit_solve_ivp))
-                #     print(model_fit_solve_ivp.params.pretty_print())
-                print("-------------------------------")
+                print(
+                    f"\n\nFit Report {split_number + 1}:\n",
+                    fit_report(model_fit_solve_ivp),
+                )
+                print(f"\n\nParameters {split_number + 1}:")
+                print(model_fit_solve_ivp.params.pretty_print(), "\n")
+                print(
+                    "-----------------------------------------------------------------------------------------------"
+                )
 
-                for name, param in model_fit_solve_ivp.params.items():
-                    if name not in param_dict:
-                        param_dict[f"{name}"] = [param.value]
-                    else:
-                        param_dict[f"{name}"].append(param.value)
+                for name, parameter in model_fit_solve_ivp.params.items():
+                    state_parameters[f"{name}"].append(parameter.value)
 
             total_residual += np.sum(np.abs(np.asarray(original_residuals[:-1])))
 
-            print("Total Residual:", total_residual)
-            print("State Runtime:", time() - state_runtime_start, "seconds")
+            print(f"\n\nTotal Residual {state}:", total_residual)
+            print(f"{state} Runtime:", time() - state_runtime_start, "seconds\n")
 
-            for key in param_dict.keys():
-                print(f"{key}:", param_dict[key])
-            model_pred_overall = np.concatenate(
+            for parameter in state_parameters.keys():
+                print(f"{parameter}:", state_parameters[parameter])
+
+            with open(
+                f"{DATA_DIR}/epidemiological_model_parameters/{state}.json", "w"
+            ) as outfile:
+                json.dump(state_parameters, outfile)
+
+            model_predictions = np.concatenate(
                 [model_predictions[i] for i in range(len(model_predictions))]
             )
-            data_overall = np.concatenate(
-                [data_values[i] for i in range(len(data_values))]
-            )
 
-            self.plot(actual_values=data_overall, model_predictions=model_pred_overall)
-            print("\n\n\n\n\n\n")
+            self.plot(
+                actual_values=self.epidemiological_model_data[state][
+                    self.epidemiological_compartment_names
+                ].values,
+                model_predictions=model_predictions,
+            )
 
     def differential_equations(
         self,
@@ -433,10 +424,6 @@ class EpidemiologicalModelParameterComputer:
                 * r_fv
             )
 
-            #             dr_uv_dt = gamma_i_uv * i_uv + gamma_h_uv * h_uv
-            #             dr_fv_dt = gamma_i_bv * i_fv + gamma_h_bv * h_fv
-            #             dr_bv_dt = gamma_i_bv * i_bv + gamma_h_bv * h_bv
-
             # Deceased
             dd_uv_dt = mu_i_uv * i_uv + mu_h_uv * h_uv
             dd_fv_dt = mu_i_fv * i_fv + mu_h_fv * h_fv
@@ -489,9 +476,9 @@ class EpidemiologicalModelParameterComputer:
 
         if solver == "odeint":
             x_odeint = odeint(
-                self.differential_equations,
-                y0,
-                t,
+                func=self.differential_equations,
+                y0=y0,
+                t=t,
                 args=(
                     population,
                     parameters,
@@ -500,8 +487,7 @@ class EpidemiologicalModelParameterComputer:
                     state,
                 ),
             )
-            #             print(self.counter)
-            #             self.counter += 1
+
             return x_odeint
 
         elif solver == "solve_ivp":
@@ -519,8 +505,7 @@ class EpidemiologicalModelParameterComputer:
                     state,
                 ),
             )
-            #             print(self.counter)
-            #             self.counter += 1
+
             return x_solve_ivp.y.T
 
     def residual(
@@ -641,11 +626,13 @@ class EpidemiologicalModelParameterComputer:
             plt.xticks(fontsize=20)
             plt.yticks(fontsize=20)
             plt.legend(fontsize=20)
+            plt.grid()
             plt.show()
 
 
 epidemiological_model_parameter_computer_configuration = {
     "data_path": f"{DATA_DIR}/epidemiological_model_data/",
+    "output_path": f"{DATA_DIR}/epidemiological_model_parameters/",
     "simulation_start_date": "11/01/2021",
     "epidemiological_compartment_names": [
         "Susceptible_UV",
@@ -669,6 +656,10 @@ epidemiological_model_parameter_computer_configuration = {
     ],
     "parameter_computation_timeframe": 28,
     "constrained_beta": False,
+    "integration_method": "RK45",
+    "differential_equation_version": 1,
+    "fitting_method": "leastsq",
+    "nan_policy": "omit",
 }
 
 epidemiological_model_parameter_computer = EpidemiologicalModelParameterComputer(
