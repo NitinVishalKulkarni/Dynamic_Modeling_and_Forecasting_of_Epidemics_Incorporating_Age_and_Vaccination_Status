@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
-from src.settings import DATA_DIR
+from src.settings import data_directory
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -19,9 +19,9 @@ class CDCDataScrapper:
     Prevention."""
 
     def __init__(
-            self,
-            website_url="https://covid.cdc.gov/covid-data-tracker/",
-            output_path=f"{DATA_DIR}/cdc/",
+        self,
+        website_url="https://covid.cdc.gov/covid-data-tracker/",
+        output_path=f"{data_directory}/cdc/",
     ):
         """This method initializes the required parameters.
 
@@ -33,7 +33,7 @@ class CDCDataScrapper:
         self.output_path = output_path
 
         # self.data_links = {}
-        with open('data_links') as f:
+        with open("data_links") as f:
             self.data_links = json.loads(f.read())
 
         # for key in self.data_links:
@@ -54,7 +54,7 @@ class CDCDataScrapper:
         for button in data:
             self.data_links[button.string.strip()] = {
                 "Main Link": "https://covid.cdc.gov/covid-data-tracker/#"
-                             + (button["data-tabname"])
+                + (button["data-tabname"])
             }
 
         # Collecting the links for the secondary data categories.
@@ -84,7 +84,7 @@ class CDCDataScrapper:
 
                 self.data_links[primary_data_category][data_source_name] = {
                     "Main Link": "https://covid.cdc.gov/covid-data-tracker/#"
-                                 + data_tabname
+                    + data_tabname
                 }
 
         # with open('data_links', 'w') as f:
@@ -117,13 +117,15 @@ class CDCDataScrapper:
         for element in elements:
             data_source_names = element.text.split("\n")
             element_source = element.get_attribute("innerHTML")
-            hyperlinks = [element_source.split('href="')[i].split('"')[0] for i in
-                          range(1, len(element_source.split('href="')))]
+            hyperlinks = [
+                element_source.split('href="')[i].split('"')[0]
+                for i in range(1, len(element_source.split('href="')))
+            ]
 
             for i in range(len(data_source_names)):
                 self.data_links["Cases, Deaths, & Testing"]["County Data & Trends"][
                     data_source_names[i] + " Download Link"
-                    ] = hyperlinks[i]
+                ] = hyperlinks[i]
 
         print(
             "\nTest:\n",
@@ -131,9 +133,15 @@ class CDCDataScrapper:
         )
 
         # Download data.
-        for download_link in self.data_links["Cases, Deaths, & Testing"]["County Data & Trends"]:
+        for download_link in self.data_links["Cases, Deaths, & Testing"][
+            "County Data & Trends"
+        ]:
             if "Download Link" in download_link:
-                chrome_webdriver.get(self.data_links["Cases, Deaths, & Testing"]["County Data & Trends"][download_link])
+                chrome_webdriver.get(
+                    self.data_links["Cases, Deaths, & Testing"]["County Data & Trends"][
+                        download_link
+                    ]
+                )
                 time.sleep(2)
 
                 element = chrome_webdriver.find_element(By.CLASS_NAME, "btn-container")
@@ -145,8 +153,10 @@ class CDCDataScrapper:
                 csv_download_link = "https://data.cdc.gov" + "".join(
                     element_source.split('href="')[1].split('" data-type="CSV"')[0]
                 )
-                urllib.request.urlretrieve(csv_download_link,
-                                           f"{self.output_path}/{download_link.split(' Download Link')[0]}.csv")
+                urllib.request.urlretrieve(
+                    csv_download_link,
+                    f"{self.output_path}/{download_link.split(' Download Link')[0]}.csv",
+                )
 
         return
 
@@ -155,7 +165,9 @@ class CDCDataScrapper:
         options = Options()
         # options.add_argument("--headless")
 
-        preferences = {"download.default_directory": self.output_path.replace("/", "\\")}
+        preferences = {
+            "download.default_directory": self.output_path.replace("/", "\\")
+        }
         options.add_experimental_option("prefs", preferences)
 
         chrome_webdriver = webdriver.Chrome(options=options)
@@ -166,25 +178,33 @@ class CDCDataScrapper:
         for element in elements:
             data_source_names = element.text.split("\n")
             element_source = element.get_attribute("outerHTML")
-            hyperlinks = [element_source.split('href="')[i].split('"')[0] for i in
-                          range(1, len(element_source.split('href="')))]
+            hyperlinks = [
+                element_source.split('href="')[i].split('"')[0]
+                for i in range(1, len(element_source.split('href="')))
+            ]
 
             for i in range(len(data_source_names)):
-                self.data_links["Cases, Deaths, & Testing"]["Cases, Deaths, and Testing by State"][
-                    data_source_names[i] + " Download Link"
-                    ] = hyperlinks[i]
+                self.data_links["Cases, Deaths, & Testing"][
+                    "Cases, Deaths, and Testing by State"
+                ][data_source_names[i] + " Download Link"] = hyperlinks[i]
 
         element = chrome_webdriver.find_element(By.ID, "btnUSTableExport")
         chrome_webdriver.execute_script("arguments[0].click();", element)
 
         self.download_wait(self.output_path)
 
-        print('Test:\n', self.data_links["Cases, Deaths, & Testing"])
+        print("Test:\n", self.data_links["Cases, Deaths, & Testing"])
 
         # Download data.
-        for download_link in self.data_links["Cases, Deaths, & Testing"]["Cases, Deaths, and Testing by State"]:
+        for download_link in self.data_links["Cases, Deaths, & Testing"][
+            "Cases, Deaths, and Testing by State"
+        ]:
             if "Download Link" in download_link:
-                chrome_webdriver.get(self.data_links["Cases, Deaths, & Testing"]["Cases, Deaths, and Testing by State"][download_link])
+                chrome_webdriver.get(
+                    self.data_links["Cases, Deaths, & Testing"][
+                        "Cases, Deaths, and Testing by State"
+                    ][download_link]
+                )
                 time.sleep(2)
 
                 element = chrome_webdriver.find_element(By.CLASS_NAME, "btn-container")
@@ -196,8 +216,10 @@ class CDCDataScrapper:
                 csv_download_link = "https://data.cdc.gov" + "".join(
                     element_source.split('href="')[1].split('" data-type="CSV"')[0]
                 )
-                urllib.request.urlretrieve(csv_download_link,
-                                           f"{self.output_path}/{download_link.split(' Download Link')[0]}.csv")
+                urllib.request.urlretrieve(
+                    csv_download_link,
+                    f"{self.output_path}/{download_link.split(' Download Link')[0]}.csv",
+                )
 
         return
 
@@ -212,7 +234,7 @@ class CDCDataScrapper:
             time.sleep(1)
             download_wait = False
             for file_name in os.listdir(download_path):
-                if file_name.endswith('.crdownload'):
+                if file_name.endswith(".crdownload"):
                     download_wait = True
 
     def scrape_all_data(self):
@@ -240,7 +262,7 @@ class CDCDataScrapper:
 
 cases_and_outcomes_data_scrapper = CDCDataScrapper(
     website_url="https://covid.cdc.gov/covid-data-tracker/",
-    output_path=f"{DATA_DIR}/cdc/",
+    output_path=f"{data_directory}/cdc/",
 )
 # cases_and_outcomes_data_scrapper.collect_data_links()
 cases_and_outcomes_data_scrapper.download_data2()

@@ -2,7 +2,7 @@ import os
 import json
 import sys
 
-from src.settings import DATA_DIR
+from src.settings import data_directory
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -20,7 +20,7 @@ class CasesDeathsAndTesting:
 
     def __init__(
         self,
-        output_path=f"{DATA_DIR}/cdc/",
+        output_path=f"{data_directory}/cdc/",
     ):
         """This method initializes the required parameters.
 
@@ -209,6 +209,6 @@ class CasesDeathsAndTesting:
 
 
 cases_and_outcomes_data_scrapper = CasesDeathsAndTesting(
-    output_path=f"{DATA_DIR}/cdc/",
+    output_path=f"{data_directory}/cdc/",
 )
 cases_and_outcomes_data_scrapper.scrape_all_data()

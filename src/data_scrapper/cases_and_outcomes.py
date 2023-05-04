@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
-from src.settings import DATA_DIR
+from src.settings import data_directory
 
 
 # noinspection DuplicatedCode
@@ -11,14 +11,15 @@ class CasesAndOutcomesDataScrapper:
     """This class implements a data scrapper which collects data on cases and outcomes from 'worldometers.info'."""
 
     def __init__(
-            self,
-            website_url="https://www.worldometers.info/coronavirus/country/us",
-            output_path="../Data/Updated Data/cases_and_outcomes/",
+        self,
+        website_url="https://www.worldometers.info/coronavirus/country/us",
+        output_path="../Data/Updated Data/cases_and_outcomes/",
     ):
         """This method initializes the required parameters.
 
         :param website_url: String - Hyperlink of worldometers website's COVID-19 page for the United States.
-        :param output_path: String - Path of the directory in which to store the scrapped data."""
+        :param output_path: String - Path of the directory in which to store the scrapped data.
+        """
 
         self.website_url = website_url
         self.output_path = output_path
@@ -53,7 +54,8 @@ class CasesAndOutcomesDataScrapper:
     def scrape_total_cases_data(self, soup):
         """This method scrapes the website for the data on total COVID-19 cases.
 
-        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from.
+        """
 
         data = soup.find(
             "script",
@@ -87,14 +89,15 @@ class CasesAndOutcomesDataScrapper:
 
         logarithmic_data_values = logarithmic_data_json["series"][0]["data"]
 
-        self.data["Dates"] = dates
+        self.data["date"] = dates
         self.data["Total Cases (Linear)"] = linear_data_values
         self.data["Total Cases (Logarithmic)"] = logarithmic_data_values
 
     def scrape_new_cases_data(self, soup):
         """This method scrapes the website for the data on new COVID-19 cases.
 
-        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from.
+        """
 
         data = soup.find(
             "script",
@@ -133,7 +136,8 @@ class CasesAndOutcomesDataScrapper:
     def scrape_active_cases_data(self, soup):
         """This method scrapes the website for the data on active COVID-19 cases.
 
-        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from.
+        """
 
         data = soup.find(
             "script",
@@ -161,7 +165,8 @@ class CasesAndOutcomesDataScrapper:
     def scrape_total_deaths_data(self, soup):
         """This method scrapes the website for the data on total COVID-19 deaths.
 
-        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from.
+        """
 
         data = soup.find(
             "script",
@@ -200,7 +205,8 @@ class CasesAndOutcomesDataScrapper:
     def scrape_new_deaths_data(self, soup):
         """This method scrapes the website for the data on new COVID-19 deaths.
 
-        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from."""
+        :param soup - bs4.BeautifulSoup - Soup of the website we want to scrape data from.
+        """
 
         data = soup.find(
             "script",
@@ -239,16 +245,16 @@ class CasesAndOutcomesDataScrapper:
     def create_final_dataset(self):
         """This method creates the final dataset.
 
-        :returns dataframe: Pandas DataFrame - """
+        :returns dataframe: Pandas DataFrame -"""
 
         dataframe = pd.DataFrame.from_dict(self.data)
-        dataframe["Dates"] = pd.to_datetime(dataframe["Dates"])
+        dataframe["date"] = pd.to_datetime(dataframe["date"])
 
         return dataframe
 
 
 cases_and_outcomes_data_scrapper = CasesAndOutcomesDataScrapper(
     website_url="https://www.worldometers.info/coronavirus/country/us",
-    output_path=f"{DATA_DIR}/updated_data/cases_and_outcomes/",
+    output_path=f"{data_directory}/cases_and_outcomes/",
 )
 cases_and_outcomes_data_scrapper.scrape_all_data()

@@ -4,7 +4,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 import pandas as pd
-from src.settings import DATA_DIR
+from src.settings import data_directory
 from src.utilities.parameter_initializer import ParameterInitializer
 from population_dynamics_computer import PopulationDynamicsComputer
 
@@ -688,7 +688,7 @@ class EpidemicSimulationMA(gym.Env):
 
 # TEST
 environment_configuration = {
-    "data_path": f"{DATA_DIR}/epidemiological_model_data/",
+    "data_path": f"{data_directory}/epidemiological_model_data/",
     "simulation_start_date": "11/01/2021",
 }
 epidemic_simulation = EpidemicSimulationMA(env_config=environment_configuration)

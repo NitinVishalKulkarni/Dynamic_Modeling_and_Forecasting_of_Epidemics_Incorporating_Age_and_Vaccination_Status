@@ -9,7 +9,7 @@ import pandas as pd
 from lmfit import minimize, fit_report
 from scipy.integrate import odeint, solve_ivp
 
-from src.settings import DATA_DIR
+from src.settings import data_directory
 from src.utilities.parameter_initializer import ParameterInitializer
 
 
@@ -170,7 +170,7 @@ class EpidemiologicalModelParameterComputer:
                 print(f"{parameter}:", state_parameters[parameter])
 
             with open(
-                f"{DATA_DIR}/epidemiological_model_parameters/{state}.json", "w"
+                f"{data_directory}/epidemiological_model_parameters/{state}.json", "w"
             ) as outfile:
                 json.dump(state_parameters, outfile)
 
@@ -631,8 +631,8 @@ class EpidemiologicalModelParameterComputer:
 
 
 epidemiological_model_parameter_computer_configuration = {
-    "data_path": f"{DATA_DIR}/epidemiological_model_data/",
-    "output_path": f"{DATA_DIR}/epidemiological_model_parameters/",
+    "data_path": f"{data_directory}/epidemiological_model_data/",
+    "output_path": f"{data_directory}/epidemiological_model_parameters/",
     "simulation_start_date": "11/01/2021",
     "epidemiological_compartment_names": [
         "Susceptible_UV",

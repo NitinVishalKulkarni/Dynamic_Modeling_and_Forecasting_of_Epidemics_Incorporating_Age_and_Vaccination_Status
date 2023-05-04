@@ -1,5 +1,5 @@
 import pandas as pd
-from src.settings import DATA_DIR
+from src.settings import data_directory
 import json
 from pathlib import Path
 import os
@@ -40,7 +40,9 @@ class ParameterInitializer:
 
         epidemiological_model_parameters = {}
         for state in self.states:
-            file = open(f"{DATA_DIR}/epidemiological_model_parameters/{state}.json")
+            file = open(
+                f"{data_directory}/epidemiological_model_parameters/{state}.json"
+            )
             data = json.load(file)
             epidemiological_model_parameters[state] = data
 
@@ -391,7 +393,7 @@ class ParameterInitializer:
     def initialize_state_populations(self):
         """This method initializes the state populations."""
 
-        us_population = pd.read_csv(f"{DATA_DIR}/population/us_population.csv")
+        us_population = pd.read_csv(f"{data_directory}/population/us_population.csv")
         state_populations = {}
         for state in self.states:
             state_population = us_population.loc[
