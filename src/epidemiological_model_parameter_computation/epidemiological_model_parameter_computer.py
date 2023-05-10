@@ -1,5 +1,7 @@
 # Imports
 import json
+import os
+import sys
 from collections import defaultdict
 from time import time
 
@@ -30,17 +32,17 @@ class EpidemiologicalModelParameterComputer:
         )
 
         self.states = self.parameter_initializer.initialize_state_names()
-        print("State Names:", self.states)
+        # print("State Names:", self.states)
 
         self.epidemiological_model_data = (
             self.parameter_initializer.initialize_epidemiological_model_data()
         )
-        print("Epidemiological Model Data:\n", self.epidemiological_model_data)
+        # print("Epidemiological Model Data:\n", self.epidemiological_model_data)
 
         self.state_populations = (
             self.parameter_initializer.initialize_state_populations()
         )
-        print("\nState Populations:\n", self.state_populations)
+        # print("\nState Populations:\n", self.state_populations)
 
         self.epidemiological_model_parameters = self.parameter_initializer.initialize_initial_epidemiological_model_parameters(
             self.parameter_computer_configuration["constrained_beta"]
@@ -61,6 +63,14 @@ class EpidemiologicalModelParameterComputer:
 
         for state in self.epidemiological_model_data:
             print("\nState:", state)
+
+            # Starts with a blank file if file exists with previously computed epidemiological model parameters.
+            with open(
+                f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
+                "w",
+            ) as outfile:
+                outfile.close()
+
             state_runtime_start = time()
 
             model_predictions = []
@@ -78,7 +88,7 @@ class EpidemiologicalModelParameterComputer:
             )
 
             for split_number in range(number_of_splits):
-                print(f"Split {split_number + 1} of {number_of_splits}:\n")
+                print(f"\nSplit {split_number + 1} of {number_of_splits}:")
 
                 split_min_index = split_number * parameter_computation_timeframe
                 split_max_index = min(
@@ -143,31 +153,59 @@ class EpidemiologicalModelParameterComputer:
 
                 original_residuals.append(self.original_residual)
 
-                print(
-                    "Split Residual:",
-                    np.sum(np.abs(self.original_residual)),
-                )
-
-                print(
-                    f"\n\nFit Report {split_number + 1}:\n",
-                    fit_report(model_fit_solve_ivp),
-                )
-                print(f"\n\nParameters {split_number + 1}:")
-                print(model_fit_solve_ivp.params.pretty_print(), "\n")
-                print(
-                    "-----------------------------------------------------------------------------------------------"
-                )
-
                 for name, parameter in model_fit_solve_ivp.params.items():
                     state_parameters[f"{name}"].append(parameter.value)
 
+                # print(
+                #     "Split Residual:",
+                #     np.sum(np.abs(self.original_residual)),
+                # )
+
+                # print(
+                #     f"\n\nFit Report {split_number + 1}:\n",
+                #     fit_report(model_fit_solve_ivp),
+                # )
+                # print(f"\n\nParameters {split_number + 1}:")
+                # print(model_fit_solve_ivp.params.pretty_print(), "\n")
+                # print(
+                #     "-----------------------------------------------------------------------------------------------"
+                # )
+
+                with open(
+                    f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
+                    "a",
+                ) as outfile:
+                    outfile.write(
+                        f"\n\nSplit {split_number + 1} of {number_of_splits}:"
+                    )
+                    outfile.write(
+                        f"\nSplit Runtime: {time() - split_runtime_start} seconds"
+                    )
+                    outfile.write(
+                        f"\nSplit Residual: {np.sum(np.abs(self.original_residual))}"
+                    )
+                    outfile.write(
+                        f"\n\nFit Report {split_number + 1}:\n {fit_report(model_fit_solve_ivp)}"
+                    )
+                    # outfile.write(f"\n\nParameters {split_number + 1}:")
+                    # outfile.write(f"{model_fit_solve_ivp.params.pretty_print()}, \n")
+                    outfile.write(
+                        "\n--------------------------------------------------------------------------------------------"
+                    )
+
             total_residual += np.sum(np.abs(np.asarray(original_residuals[:-1])))
 
-            print(f"\n\nTotal Residual {state}:", total_residual)
+            # print(f"\n\nTotal Residual {state}:", total_residual)
             print(f"{state} Runtime:", time() - state_runtime_start, "seconds\n")
 
-            for parameter in state_parameters.keys():
-                print(f"{parameter}:", state_parameters[parameter])
+            with open(
+                f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
+                "a",
+            ) as outfile:
+                outfile.write(f"\n\nTotal Residual {state}: {total_residual}")
+
+            # for parameter in state_parameters.keys():
+            #     print(f"{parameter}:", state_parameters[parameter])
 
             with open(
                 f"{data_directory}/epidemiological_model_parameters/{state}.json", "w"
@@ -178,7 +216,21 @@ class EpidemiologicalModelParameterComputer:
                 [model_predictions[i] for i in range(len(model_predictions))]
             )
 
+            # Saving the model predictions.
+            date_values = self.epidemiological_model_data[state]["date"].values.reshape(
+                -1, 1
+            )
+            data = np.concatenate((date_values, model_predictions), axis=1)
+            model_predictions_dataframe = pd.DataFrame(
+                data, columns=[["date"] + self.epidemiological_compartment_names]
+            )
+            model_predictions_dataframe.to_csv(
+                f"{data_directory}/epidemiological_model_parameters/model_predictions/{state}.csv",
+                index=False,
+            )
+
             self.plot(
+                state=state,
                 actual_values=self.epidemiological_model_data[state][
                     self.epidemiological_compartment_names
                 ].values,
@@ -239,6 +291,13 @@ class EpidemiologicalModelParameterComputer:
                 d_fv,
                 d_bv,
             ) = y
+
+            if i_bv < 0:
+                print("Negative I_BV")
+            if i_fv < 0:
+                print("Negative I_FV")
+            if i_uv < 0:
+                print("Negative I_UV")
 
             # Force of infection
             total_infections = max((i_uv + i_fv + i_bv), 1)
@@ -601,12 +660,19 @@ class EpidemiologicalModelParameterComputer:
         )
         return residual_solve_ivp
 
-    def plot(self, actual_values, model_predictions):
+    def plot(self, state, actual_values, model_predictions):
         """This method plots the model predictions vs the actual data.
 
         :parameter model_predictions: Array - Model predictions."""
 
         for i, compartment_name in enumerate(self.epidemiological_compartment_names):
+            if not os.path.exists(
+                f"{data_directory}/epidemiological_model_parameters/plots/{state}"
+            ):
+                os.makedirs(
+                    f"{data_directory}/epidemiological_model_parameters/plots/{state}"
+                )
+
             plt.figure(figsize=(16, 10))
             plt.plot(
                 actual_values[:, i],
@@ -627,7 +693,11 @@ class EpidemiologicalModelParameterComputer:
             plt.yticks(fontsize=20)
             plt.legend(fontsize=20)
             plt.grid()
-            plt.show()
+            plt.savefig(
+                f"{data_directory}/epidemiological_model_parameters/plots/{state}/{compartment_name}.png"
+            )
+            plt.close()
+            # plt.show()
 
 
 epidemiological_model_parameter_computer_configuration = {
