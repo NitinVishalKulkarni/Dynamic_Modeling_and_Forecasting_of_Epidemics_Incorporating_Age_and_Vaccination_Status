@@ -436,16 +436,13 @@ class DataPreprocessing:
             data.reset_index(inplace=True)
 
             imputation_columns = []
-            # Computing the age group and vaccination group wise multipliers.
+
             for age_group in age_groups:
                 for vaccination_group in vaccination_groups:
                     data[f"{age_group}_{vaccination_group}_multiplier"] = [
                         np.NAN for _ in range(len(data))
                     ]
                     imputation_columns.append(f"{age_group}_{vaccination_group}_multiplier")
-
-            # data["UV_multiplier"] = [np.NAN for _ in range(len(data))]
-            # data["PSV_multiplier"] = [np.NAN for _ in range(len(data))]
 
             # Primary Series Vaccination
             if vaccination_groups == ["UV", "PSV"]:
@@ -623,8 +620,6 @@ class DataPreprocessing:
                 for i, week in enumerate(weeks):
                     week_age_groups = np.unique(data.loc[(data["mmwr_week"] == week)]["age_group"])
                     for age_group in week_age_groups:
-                        # for i in range(0, len(data), 2):
-
                         unvaccinated_vaccinated_irr = (
                             data.loc[
                                 (data["mmwr_week"] == week)
@@ -653,16 +648,12 @@ class DataPreprocessing:
                                 ]["age_adj_irr"].iloc[0]
                         )
 
-                        # age_adjusted_vax_irr = data["age_adj_irr"].iloc[i]
-                        # age_adjusted_bivalent_booster_irr = data["age_adj_irr"].iloc[i + 1]
-
                         unvaccinated_multiplier = 1 / (
                                 1
                                 + (1 / unvaccinated_vaccinated_irr)
                                 + (1 / unvaccinated_bivalent_booster_vaccinated_irr)
                         )
                         data[f"{age_group}_UV_multiplier"].iloc[i] = unvaccinated_multiplier
-                        # data[f"{age_group}_UV_multiplier"].iloc[i + 1] = unvaccinated_multiplier
 
                         primary_series_vaccinated_multiplier = 1 / (
                                 unvaccinated_vaccinated_irr
@@ -670,21 +661,13 @@ class DataPreprocessing:
                                 + (unvaccinated_vaccinated_irr / unvaccinated_bivalent_booster_vaccinated_irr)
                         )
                         data[f"{age_group}_V_multiplier"].iloc[i] = primary_series_vaccinated_multiplier
-                        # data[f"{age_group}_V_multiplier"].iloc[
-                        #     i + 1
-                        #     ] = primary_series_vaccinated_multiplier
 
                         bivalent_booster_vaccinated_multiplier = 1 / (
                                 unvaccinated_bivalent_booster_vaccinated_irr
                                 + (unvaccinated_bivalent_booster_vaccinated_irr / unvaccinated_vaccinated_irr)
                                 + 1
                         )
-                        data[f"{age_group}_BiV_multiplier"].iloc[
-                            i
-                        ] = bivalent_booster_vaccinated_multiplier
-                        # data[f"{age_group}_BiV_multiplier"].iloc[
-                        #     i + 1
-                        #     ] = bivalent_booster_vaccinated_multiplier
+                        data[f"{age_group}_BiV_multiplier"].iloc[i] = bivalent_booster_vaccinated_multiplier
 
             data["week_end_date"] = pd.to_datetime(data["week_end_date"])
 
@@ -697,11 +680,6 @@ class DataPreprocessing:
 
             data.rename(columns={"week_end_date": "date"}, inplace=True)
             data = data[["date"] + imputation_columns].dropna(how="all")
-
-            data.to_csv(
-                f"{data_directory}/data_by_age_vaccination_status/before_imputation_{output_file_name}",
-                index=False,
-            )
 
             data = self.data_imputer(
                 data=data,
