@@ -32,7 +32,7 @@ class DataPreprocessing:
         self.us_testing = pd.read_csv(data_paths["testing"])
         self.us_hospitalizations = pd.read_csv(data_paths["hospitalization"])
         self.us_vaccinations = pd.read_csv(data_paths["vaccination"])
-        # self.google_mobility_report = pd.read_csv(data_paths["google_mobility_report"])
+        self.google_mobility_report = pd.read_csv(data_paths["google_mobility_report"])
         self.cases_deaths_by_age_vaccination = pd.read_csv(
             data_paths["cases_deaths_by_age_vaccination"]
         )
@@ -714,91 +714,88 @@ class DataPreprocessing:
                 index=False,
             )
 
-        # # Cases Deaths by primary series vaccination.
-        # cases_by_age_vaccination = self.cases_deaths_by_age_vaccination.loc[
-        #     (self.cases_deaths_by_age_vaccination["outcome"] == "case")
-        #     & (self.cases_deaths_by_age_vaccination["Vaccine product"] == "all_types")
-        #     ]
-        # helper_preprocess_data_by_age_group_vaccination_status(
-        #     data=cases_by_age_vaccination,
-        #     age_groups=np.unique(cases_by_age_vaccination["Age group"]),
-        #     vaccination_groups=["UV", "PSV"],
-        #     earliest_date="04/04/2021",
-        #     latest_date="09/24/2022",
-        #     output_file_name="cases_by_age_primary_series_vaccination.csv",
-        # )
-        #
-        # deaths_by_age_vaccination = self.cases_deaths_by_age_vaccination.loc[
-        #     (self.cases_deaths_by_age_vaccination["outcome"] == "death")
-        #     & (self.cases_deaths_by_age_vaccination["Vaccine product"] == "all_types")
-        #     ]
-        # helper_preprocess_data_by_age_group_vaccination_status(
-        #     data=deaths_by_age_vaccination,
-        #     age_groups=np.unique(deaths_by_age_vaccination["Age group"]),
-        #     vaccination_groups=["UV", "PSV"],
-        #     earliest_date="04/04/2021",
-        #     latest_date="09/03/2022",
-        #     output_file_name="deaths_by_age_primary_series_vaccination.csv",
-        # )
-        #
-        # # Cases Deaths by first booster vaccination.
-        # cases_by_age_first_booster = self.cases_deaths_by_age_first_booster.loc[
-        #     (self.cases_deaths_by_age_first_booster["outcome"] == "case")
-        #     & (self.cases_deaths_by_age_first_booster["vaccine_product"] == "all_types")
-        #     ]
-        # helper_preprocess_data_by_age_group_vaccination_status(
-        #     data=cases_by_age_first_booster,
-        #     age_groups=np.unique(cases_by_age_first_booster["age_group"]),
-        #     vaccination_groups=["UV", "PSV", "BV1"],
-        #     earliest_date="09/19/2021",
-        #     latest_date="09/24/2022",
-        #     output_file_name="cases_by_age_first_booster_vaccination.csv",
-        # )
-        #
-        # deaths_by_age_first_booster = self.cases_deaths_by_age_first_booster.loc[
-        #     (self.cases_deaths_by_age_first_booster["outcome"] == "death")
-        #     & (self.cases_deaths_by_age_first_booster["vaccine_product"] == "all_types")
-        #     ]
-        # helper_preprocess_data_by_age_group_vaccination_status(
-        #     data=deaths_by_age_first_booster,
-        #     age_groups=np.unique(deaths_by_age_first_booster["age_group"]),
-        #     vaccination_groups=["UV", "PSV", "BV1"],
-        #     earliest_date="09/19/2021",
-        #     latest_date="09/03/2022",
-        #     output_file_name="deaths_by_age_first_booster_vaccination.csv",
-        # )
-        #
-        # # Cases Deaths by second booster vaccination.
-        # cases_by_age_second_booster = self.cases_deaths_by_age_second_booster.loc[
-        #     (self.cases_deaths_by_age_second_booster["outcome"] == "case")
-        #     & (self.cases_deaths_by_age_second_booster["vaccine_product"] == "all_types")
-        #     ]
-        # helper_preprocess_data_by_age_group_vaccination_status(
-        #     data=cases_by_age_second_booster,
-        #     age_groups=np.unique(cases_by_age_second_booster["age_group"]),
-        #     vaccination_groups=["UV", "PSV", "BV1", "BV2"],
-        #     earliest_date="03/27/2022",
-        #     latest_date="09/24/2022",
-        #     output_file_name="cases_by_age_second_booster_vaccination.csv",
-        # )
-        #
-        # deaths_by_age_second_booster = self.cases_deaths_by_age_second_booster.loc[
-        #     (self.cases_deaths_by_age_second_booster["outcome"] == "death")
-        #     & (self.cases_deaths_by_age_second_booster["vaccine_product"] == "all_types")
-        #     ]
-        # helper_preprocess_data_by_age_group_vaccination_status(
-        #     data=deaths_by_age_second_booster,
-        #     age_groups=np.unique(deaths_by_age_second_booster["age_group"]),
-        #     vaccination_groups=["UV", "PSV", "BV1", "BV2"],
-        #     earliest_date="03/27/2022",
-        #     latest_date="09/03/2022",
-        #     output_file_name="deaths_by_age_second_booster_vaccination.csv",
-        # )
+        # Cases Deaths by primary series vaccination.
+        cases_by_age_vaccination = self.cases_deaths_by_age_vaccination.loc[
+            (self.cases_deaths_by_age_vaccination["outcome"] == "case")
+            & (self.cases_deaths_by_age_vaccination["Vaccine product"] == "all_types")
+            ]
+        helper_preprocess_data_by_age_group_vaccination_status(
+            data=cases_by_age_vaccination,
+            age_groups=np.unique(cases_by_age_vaccination["Age group"]),
+            vaccination_groups=["UV", "PSV"],
+            earliest_date="04/04/2021",
+            latest_date="09/24/2022",
+            output_file_name="cases_by_age_primary_series_vaccination.csv",
+        )
+
+        deaths_by_age_vaccination = self.cases_deaths_by_age_vaccination.loc[
+            (self.cases_deaths_by_age_vaccination["outcome"] == "death")
+            & (self.cases_deaths_by_age_vaccination["Vaccine product"] == "all_types")
+            ]
+        helper_preprocess_data_by_age_group_vaccination_status(
+            data=deaths_by_age_vaccination,
+            age_groups=np.unique(deaths_by_age_vaccination["Age group"]),
+            vaccination_groups=["UV", "PSV"],
+            earliest_date="04/04/2021",
+            latest_date="09/03/2022",
+            output_file_name="deaths_by_age_primary_series_vaccination.csv",
+        )
+
+        # Cases Deaths by first booster vaccination.
+        cases_by_age_first_booster = self.cases_deaths_by_age_first_booster.loc[
+            (self.cases_deaths_by_age_first_booster["outcome"] == "case")
+            & (self.cases_deaths_by_age_first_booster["vaccine_product"] == "all_types")
+            ]
+        helper_preprocess_data_by_age_group_vaccination_status(
+            data=cases_by_age_first_booster,
+            age_groups=np.unique(cases_by_age_first_booster["age_group"]),
+            vaccination_groups=["UV", "PSV", "BV1"],
+            earliest_date="09/19/2021",
+            latest_date="09/24/2022",
+            output_file_name="cases_by_age_first_booster_vaccination.csv",
+        )
+
+        deaths_by_age_first_booster = self.cases_deaths_by_age_first_booster.loc[
+            (self.cases_deaths_by_age_first_booster["outcome"] == "death")
+            & (self.cases_deaths_by_age_first_booster["vaccine_product"] == "all_types")
+            ]
+        helper_preprocess_data_by_age_group_vaccination_status(
+            data=deaths_by_age_first_booster,
+            age_groups=np.unique(deaths_by_age_first_booster["age_group"]),
+            vaccination_groups=["UV", "PSV", "BV1"],
+            earliest_date="09/19/2021",
+            latest_date="09/03/2022",
+            output_file_name="deaths_by_age_first_booster_vaccination.csv",
+        )
+
+        # Cases Deaths by second booster vaccination.
+        cases_by_age_second_booster = self.cases_deaths_by_age_second_booster.loc[
+            (self.cases_deaths_by_age_second_booster["outcome"] == "case")
+            & (self.cases_deaths_by_age_second_booster["vaccine_product"] == "all_types")
+            ]
+        helper_preprocess_data_by_age_group_vaccination_status(
+            data=cases_by_age_second_booster,
+            age_groups=np.unique(cases_by_age_second_booster["age_group"]),
+            vaccination_groups=["UV", "PSV", "BV1", "BV2"],
+            earliest_date="03/27/2022",
+            latest_date="09/24/2022",
+            output_file_name="cases_by_age_second_booster_vaccination.csv",
+        )
+
+        deaths_by_age_second_booster = self.cases_deaths_by_age_second_booster.loc[
+            (self.cases_deaths_by_age_second_booster["outcome"] == "death")
+            & (self.cases_deaths_by_age_second_booster["vaccine_product"] == "all_types")
+            ]
+        helper_preprocess_data_by_age_group_vaccination_status(
+            data=deaths_by_age_second_booster,
+            age_groups=np.unique(deaths_by_age_second_booster["age_group"]),
+            vaccination_groups=["UV", "PSV", "BV1", "BV2"],
+            earliest_date="03/27/2022",
+            latest_date="09/03/2022",
+            output_file_name="deaths_by_age_second_booster_vaccination.csv",
+        )
 
         # Cases Deaths by bivalent booster vaccination.
-        # temp = epiweeks.Week.fromstring("202238").enddate()
-        # print(temp)
-
         cases_by_age_bivalent_booster = self.cases_deaths_by_age_bivalent_booster.loc[
             (self.cases_deaths_by_age_bivalent_booster["outcome"] == "case")
             & (self.cases_deaths_by_age_bivalent_booster["mmwr_week"] >= 202238)
