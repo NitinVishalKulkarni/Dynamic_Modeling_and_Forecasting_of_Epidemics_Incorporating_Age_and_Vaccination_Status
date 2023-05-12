@@ -11,7 +11,6 @@ pd.set_option("display.max_columns", None)
 pd.options.mode.chained_assignment = None
 
 
-# noinspection DuplicatedCode
 class DataPreprocessing:
     """This class preprocesses the data for the country and creates the state data."""
 
@@ -70,6 +69,8 @@ class DataPreprocessing:
                             while pd.isnull(data[column_name][i + counter]):
                                 counter += 1
                         except KeyError:
+                            # Note: We pass on KeyErrors as some data by age groups and vaccination statuses has empty
+                            # rows at the end.
                             pass
 
                         if counter >= 7:
@@ -78,8 +79,12 @@ class DataPreprocessing:
                         else:
                             for j in range(counter):
                                 try:
-                                    data[column_name][i + j] = data[column_name][i + counter]
+                                    data[column_name][i + j] = data[column_name][
+                                        i + counter
+                                    ]
                                 except KeyError:
+                                    # Note: We pass on KeyErrors as some data by age groups and vaccination statuses
+                                    # has empty rows at the end.
                                     pass
 
         elif imputation_method == "difference":
@@ -94,7 +99,7 @@ class DataPreprocessing:
             state_vaccination = self.us_vaccinations.loc[
                 self.us_vaccinations["Location"]
                 == self.state_name_to_state_abbreviation[state]
-                ]
+            ]
 
             state_vaccination.rename(
                 columns={"Date": "date", "Location": "state"}, inplace=True
@@ -129,8 +134,8 @@ class DataPreprocessing:
                             counter += 1
 
                         difference = (
-                                state_vaccination[column_name][i + counter]
-                                - state_vaccination[column_name][i - 1]
+                            state_vaccination[column_name][i + counter]
+                            - state_vaccination[column_name][i - 1]
                         )
 
                         for j in range(counter):
@@ -159,7 +164,7 @@ class DataPreprocessing:
             state_hospitalization = self.us_hospitalizations.loc[
                 self.us_hospitalizations["state"]
                 == self.state_name_to_state_abbreviation[state]
-                ]
+            ]
             state_hospitalization = state_hospitalization.sort_values(by="date")
             state_hospitalization["state"] = [
                 state for _ in range(len(state_hospitalization))
@@ -229,8 +234,8 @@ class DataPreprocessing:
 
                     temp = state_testing.loc[
                         (
-                                (state_testing["date"] == date)
-                                & (state_testing["overall_outcome"] == "Negative")
+                            (state_testing["date"] == date)
+                            & (state_testing["overall_outcome"] == "Negative")
                         )
                     ]["new_results_reported"]
                     new_negative_tests.append(
@@ -239,8 +244,8 @@ class DataPreprocessing:
 
                     temp = state_testing.loc[
                         (
-                                (state_testing["date"] == date)
-                                & (state_testing["overall_outcome"] == "Positive")
+                            (state_testing["date"] == date)
+                            & (state_testing["overall_outcome"] == "Positive")
                         )
                     ]["new_results_reported"]
                     new_positive_tests.append(
@@ -249,8 +254,8 @@ class DataPreprocessing:
 
                     temp = state_testing.loc[
                         (
-                                (state_testing["date"] == date)
-                                & (state_testing["overall_outcome"] == "Inconclusive")
+                            (state_testing["date"] == date)
+                            & (state_testing["overall_outcome"] == "Inconclusive")
                         )
                     ]["new_results_reported"]
                     new_inconclusive_tests.append(
@@ -259,8 +264,8 @@ class DataPreprocessing:
 
                     temp = state_testing.loc[
                         (
-                                (state_testing["date"] == date)
-                                & (state_testing["overall_outcome"] == "Negative")
+                            (state_testing["date"] == date)
+                            & (state_testing["overall_outcome"] == "Negative")
                         )
                     ]["total_results_reported"]
                     total_negative_tests.append(
@@ -269,8 +274,8 @@ class DataPreprocessing:
 
                     temp = state_testing.loc[
                         (
-                                (state_testing["date"] == date)
-                                & (state_testing["overall_outcome"] == "Positive")
+                            (state_testing["date"] == date)
+                            & (state_testing["overall_outcome"] == "Positive")
                         )
                     ]["total_results_reported"]
                     total_positive_tests.append(
@@ -279,8 +284,8 @@ class DataPreprocessing:
 
                     temp = state_testing.loc[
                         (
-                                (state_testing["date"] == date)
-                                & (state_testing["overall_outcome"] == "Inconclusive")
+                            (state_testing["date"] == date)
+                            & (state_testing["overall_outcome"] == "Inconclusive")
                         )
                     ]["total_results_reported"]
                     total_inconclusive_tests.append(
@@ -308,7 +313,7 @@ class DataPreprocessing:
 
         us_mobility = self.google_mobility_report.loc[
             self.google_mobility_report["country_region"] == "United States"
-            ]
+        ]
 
         for state in self.states:
             state_dataframe = us_mobility.loc[us_mobility["sub_region_1"] == state]
@@ -416,16 +421,18 @@ class DataPreprocessing:
         """This method preprocesses the data on cases, deaths, and hospitalizations by age groups."""
 
         def helper_preprocess_data_by_age_group_vaccination_status(
-                data,
-                age_groups,
-                vaccination_groups,
-                earliest_date,
-                latest_date,
-                output_file_name,
+            data,
+            weeks,
+            age_groups,
+            vaccination_groups,
+            earliest_date,
+            latest_date,
+            output_file_name,
         ):
             """
             This is a helper function to preprocess the data by age groups and vaccination status.
             :param data: Pandas Dataframe - Data on vaccinate Effectiveness and Breakthrough Surveillance.
+            :param weeks: Epidemiological weeks for
             :param age_groups: List - List of age groups in the data.
             :param vaccination_groups: List - List of vaccination groups in the data.
             :param earliest_date: String - The earliest date for which the data is available.
@@ -442,165 +449,211 @@ class DataPreprocessing:
                     data[f"{age_group}_{vaccination_group}_multiplier"] = [
                         np.NAN for _ in range(len(data))
                     ]
-                    imputation_columns.append(f"{age_group}_{vaccination_group}_multiplier")
+                    imputation_columns.append(
+                        f"{age_group}_{vaccination_group}_multiplier"
+                    )
 
             # Primary Series Vaccination
             if vaccination_groups == ["UV", "PSV"]:
-
-                weeks = data["MMWR week"].unique()
-                week_end_dates = pd.Series(weeks).apply(
-                    lambda x: epiweeks.Week.fromstring(str(x)).enddate()
-                )
-                data["week_end_date"] = [np.NAN for _ in range(len(data))]
-                for i in range(len(week_end_dates)):
-                    data["week_end_date"].iloc[i] = week_end_dates.iloc[i]
-
                 for i, week in enumerate(weeks):
-                    week_age_groups = np.unique(data.loc[(data["MMWR week"] == week)]["Age group"])
+                    week_age_groups = np.unique(
+                        data.loc[(data["MMWR week"] == week)]["Age group"]
+                    )
                     for age_group in week_age_groups:
                         unvaccinated_primary_series_vaccinated_irr = (
-                            data.loc[(data["MMWR week"] == week)
-                                     & (data["Age group"] == age_group)]["Crude IRR"].iloc[0]
+                            data.loc[
+                                (data["MMWR week"] == week)
+                                & (data["Age group"] == age_group)
+                            ]["Crude IRR"].iloc[0]
                             if age_group != "all_ages_adj"
-                            else data.loc[(data["MMWR week"] == week)
-                                          & (data["Age group"] == age_group)]["Age adjusted IRR"].iloc[0]
+                            else data.loc[
+                                (data["MMWR week"] == week)
+                                & (data["Age group"] == age_group)
+                            ]["Age adjusted IRR"].iloc[0]
                         )
-                        unvaccinated_multiplier = unvaccinated_primary_series_vaccinated_irr / (
-                                unvaccinated_primary_series_vaccinated_irr + 1
+                        unvaccinated_multiplier = (
+                            unvaccinated_primary_series_vaccinated_irr
+                            / (unvaccinated_primary_series_vaccinated_irr + 1)
                         )
 
-                        data[f"{age_group}_UV_multiplier"].iloc[i] = unvaccinated_multiplier
+                        data[f"{age_group}_UV_multiplier"].iloc[
+                            i
+                        ] = unvaccinated_multiplier
                         primary_series_vaccinated_multiplier = (
-                                1 - unvaccinated_multiplier
+                            1 - unvaccinated_multiplier
                         )
-                        data[f"{age_group}_PSV_multiplier"].iloc[i] = primary_series_vaccinated_multiplier
+                        data[f"{age_group}_PSV_multiplier"].iloc[
+                            i
+                        ] = primary_series_vaccinated_multiplier
 
             # First Booster Vaccination
             elif vaccination_groups == ["UV", "PSV", "BV1"]:
-                weeks = data["mmwr_week"].unique()
-                week_end_dates = pd.Series(weeks).apply(
-                    lambda x: epiweeks.Week.fromstring(str(x)).enddate()
-                )
-                data["week_end_date"] = [np.NAN for _ in range(len(data))]
-                for i in range(len(week_end_dates)):
-                    data["week_end_date"].iloc[i] = week_end_dates.iloc[i]
-
                 for i, week in enumerate(weeks):
-                    week_age_groups = np.unique(data.loc[(data["mmwr_week"] == week)]["age_group"])
+                    week_age_groups = np.unique(
+                        data.loc[(data["mmwr_week"] == week)]["age_group"]
+                    )
                     for age_group in week_age_groups:
                         unvaccinated_primary_series_vaccinated_irr = (
-                            data.loc[(data["mmwr_week"] == week)
-                                     & (data["age_group"] == age_group)]["crude_irr"].iloc[0]
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["crude_irr"].iloc[0]
                             if age_group != "all_ages"
-                            else data.loc[(data["mmwr_week"] == week)
-                                          & (data["age_group"] == age_group)]["age_adj_irr"].iloc[0]
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["age_adj_irr"].iloc[0]
                         )
 
                         unvaccinated_first_booster_vaccinated_irr = (
-                            data.loc[(data["mmwr_week"] == week)
-                                     & (data["age_group"] == age_group)]["crude_booster_irr"].iloc[0]
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["crude_booster_irr"].iloc[0]
                             if age_group != "all_ages"
-                            else data.loc[(data["mmwr_week"] == week)
-                                          & (data["age_group"] == age_group)]["age_adj_booster_irr"].iloc[0]
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["age_adj_booster_irr"].iloc[0]
                         )
 
                         unvaccinated_multiplier = 1 / (
-                                1 + (1 / unvaccinated_primary_series_vaccinated_irr)
-                                + (1 / unvaccinated_first_booster_vaccinated_irr)
+                            1
+                            + (1 / unvaccinated_primary_series_vaccinated_irr)
+                            + (1 / unvaccinated_first_booster_vaccinated_irr)
                         )
-                        data[f"{age_group}_UV_multiplier"].iloc[i] = unvaccinated_multiplier
+                        data[f"{age_group}_UV_multiplier"].iloc[
+                            i
+                        ] = unvaccinated_multiplier
                         primary_series_vaccinated_multiplier = 1 / (
-                                unvaccinated_primary_series_vaccinated_irr
-                                + 1
-                                + (1 / (unvaccinated_first_booster_vaccinated_irr
-                                        / unvaccinated_primary_series_vaccinated_irr))
+                            unvaccinated_primary_series_vaccinated_irr
+                            + 1
+                            + (
+                                1
+                                / (
+                                    unvaccinated_first_booster_vaccinated_irr
+                                    / unvaccinated_primary_series_vaccinated_irr
+                                )
+                            )
                         )
                         data[f"{age_group}_PSV_multiplier"].iloc[
                             i
                         ] = primary_series_vaccinated_multiplier
 
                         first_booster_vaccinated_multiplier = 1 / (
+                            unvaccinated_first_booster_vaccinated_irr
+                            + (
                                 unvaccinated_first_booster_vaccinated_irr
-                                + (unvaccinated_first_booster_vaccinated_irr
-                                   / unvaccinated_primary_series_vaccinated_irr)
-                                + 1
+                                / unvaccinated_primary_series_vaccinated_irr
+                            )
+                            + 1
                         )
-                        data[f"{age_group}_BV1_multiplier"].iloc[i] = first_booster_vaccinated_multiplier
+                        data[f"{age_group}_BV1_multiplier"].iloc[
+                            i
+                        ] = first_booster_vaccinated_multiplier
 
             # Second Booster Vaccination
             elif vaccination_groups == ["UV", "PSV", "BV1", "BV2"]:
-                weeks = data["mmwr_week"].unique()
-                week_end_dates = pd.Series(weeks).apply(
-                    lambda x: epiweeks.Week.fromstring(str(x)).enddate()
-                )
-                data["week_end_date"] = [np.NAN for _ in range(len(data))]
-                for i in range(len(week_end_dates)):
-                    data["week_end_date"].iloc[i] = week_end_dates.iloc[i]
-
                 for i, week in enumerate(weeks):
-                    week_age_groups = np.unique(data.loc[(data["mmwr_week"] == week)]["age_group"])
+                    week_age_groups = np.unique(
+                        data.loc[(data["mmwr_week"] == week)]["age_group"]
+                    )
                     for age_group in week_age_groups:
                         unvaccinated_primary_series_vaccinated_irr = (
-                            data.loc[(data["mmwr_week"] == week)
-                                     & (data["age_group"] == age_group)]["crude_irr"].iloc[0]
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["crude_irr"].iloc[0]
                             if age_group != "all_ages"
-                            else data.loc[(data["mmwr_week"] == week)
-                                          & (data["age_group"] == age_group)]["age_adj_vax_irr"].iloc[0]
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["age_adj_vax_irr"].iloc[0]
                         )
 
                         unvaccinated_first_booster_vaccinated_irr = (
-                            data.loc[(data["mmwr_week"] == week)
-                                     & (data["age_group"] == age_group)]["crude_one_booster_irr"].iloc[0]
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["crude_one_booster_irr"].iloc[0]
                             if age_group != "all_ages"
-                            else data.loc[(data["mmwr_week"] == week)
-                                          & (data["age_group"] == age_group)]["age_adj_one_booster_irr"].iloc[0]
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["age_adj_one_booster_irr"].iloc[0]
                         )
 
                         unvaccinated_second_booster_vaccinated_irr = (
-                            data.loc[(data["mmwr_week"] == week)
-                                     & (data["age_group"] == age_group)]["crude_two_booster_irr"].iloc[0]
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["crude_two_booster_irr"].iloc[0]
                             if age_group != "all_ages"
-                            else data.loc[(data["mmwr_week"] == week)
-                                          & (data["age_group"] == age_group)]["age_adj_two_booster_irr"].iloc[0]
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["age_adj_two_booster_irr"].iloc[0]
                         )
 
                         unvaccinated_multiplier = 1 / (
-                                1
-                                + (1 / unvaccinated_primary_series_vaccinated_irr)
-                                + (1 / unvaccinated_first_booster_vaccinated_irr)
-                                + (1 / unvaccinated_second_booster_vaccinated_irr)
+                            1
+                            + (1 / unvaccinated_primary_series_vaccinated_irr)
+                            + (1 / unvaccinated_first_booster_vaccinated_irr)
+                            + (1 / unvaccinated_second_booster_vaccinated_irr)
                         )
-                        data[f"{age_group}_UV_multiplier"].iloc[i] = unvaccinated_multiplier
+                        data[f"{age_group}_UV_multiplier"].iloc[
+                            i
+                        ] = unvaccinated_multiplier
 
                         primary_series_vaccinated_multiplier = 1 / (
-                                unvaccinated_primary_series_vaccinated_irr
-                                + 1
-                                + (1 / (unvaccinated_first_booster_vaccinated_irr
-                                        / unvaccinated_primary_series_vaccinated_irr))
-                                + (1 / (unvaccinated_second_booster_vaccinated_irr
-                                        / unvaccinated_primary_series_vaccinated_irr))
+                            unvaccinated_primary_series_vaccinated_irr
+                            + 1
+                            + (
+                                1
+                                / (
+                                    unvaccinated_first_booster_vaccinated_irr
+                                    / unvaccinated_primary_series_vaccinated_irr
+                                )
+                            )
+                            + (
+                                1
+                                / (
+                                    unvaccinated_second_booster_vaccinated_irr
+                                    / unvaccinated_primary_series_vaccinated_irr
+                                )
+                            )
                         )
                         data[f"{age_group}_PSV_multiplier"].iloc[
                             i
                         ] = primary_series_vaccinated_multiplier
 
                         first_booster_vaccinated_multiplier = 1 / (
+                            unvaccinated_first_booster_vaccinated_irr
+                            + (
                                 unvaccinated_first_booster_vaccinated_irr
-                                + (unvaccinated_first_booster_vaccinated_irr
-                                   / unvaccinated_primary_series_vaccinated_irr)
-                                + 1
-                                + (unvaccinated_first_booster_vaccinated_irr
-                                   / unvaccinated_second_booster_vaccinated_irr)
+                                / unvaccinated_primary_series_vaccinated_irr
+                            )
+                            + 1
+                            + (
+                                unvaccinated_first_booster_vaccinated_irr
+                                / unvaccinated_second_booster_vaccinated_irr
+                            )
                         )
-                        data[f"{age_group}_BV1_multiplier"].iloc[i] = first_booster_vaccinated_multiplier
+                        data[f"{age_group}_BV1_multiplier"].iloc[
+                            i
+                        ] = first_booster_vaccinated_multiplier
 
                         second_booster_vaccinated_multiplier = 1 / (
+                            unvaccinated_second_booster_vaccinated_irr
+                            + (
                                 unvaccinated_second_booster_vaccinated_irr
-                                + (unvaccinated_second_booster_vaccinated_irr
-                                   / unvaccinated_primary_series_vaccinated_irr)
-                                + (unvaccinated_second_booster_vaccinated_irr
-                                   / unvaccinated_first_booster_vaccinated_irr)
-                                + 1
+                                / unvaccinated_primary_series_vaccinated_irr
+                            )
+                            + (
+                                unvaccinated_second_booster_vaccinated_irr
+                                / unvaccinated_first_booster_vaccinated_irr
+                            )
+                            + 1
                         )
                         data[f"{age_group}_BV2_multiplier"].iloc[
                             i
@@ -608,66 +661,84 @@ class DataPreprocessing:
 
             # Bivalent Booster Vaccination
             elif vaccination_groups == ["UV", "V", "BiV"]:
-                weeks = data["mmwr_week"].unique()
-                week_end_dates = pd.Series(weeks).apply(
-                    lambda x: epiweeks.Week.fromstring(str(x)).enddate()
-                )
-
-                data["week_end_date"] = [np.NAN for _ in range(len(data))]
-                for i in range(len(week_end_dates)):
-                    data["week_end_date"].iloc[i] = week_end_dates.iloc[i]
-
                 for i, week in enumerate(weeks):
-                    week_age_groups = np.unique(data.loc[(data["mmwr_week"] == week)]["age_group"])
+                    week_age_groups = np.unique(
+                        data.loc[(data["mmwr_week"] == week)]["age_group"]
+                    )
                     for age_group in week_age_groups:
                         unvaccinated_vaccinated_irr = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
                                 & (data["vaccination_status"] == "vaccinated")
-                                ]["crude_irr"].iloc[0]
+                            ]["crude_irr"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
                                 & (data["vaccination_status"] == "vaccinated")
-                                ]["age_adj_irr"].iloc[0]
+                            ]["age_adj_irr"].iloc[0]
                         )
 
                         unvaccinated_bivalent_booster_vaccinated_irr = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                                & (data["vaccination_status"] == "vax with updated booster")
-                                ]["crude_irr"].iloc[0]
+                                & (
+                                    data["vaccination_status"]
+                                    == "vax with updated booster"
+                                )
+                            ]["crude_irr"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                                & (data["vaccination_status"] == "vax with updated booster")
-                                ]["age_adj_irr"].iloc[0]
+                                & (
+                                    data["vaccination_status"]
+                                    == "vax with updated booster"
+                                )
+                            ]["age_adj_irr"].iloc[0]
                         )
 
                         unvaccinated_multiplier = 1 / (
-                                1
-                                + (1 / unvaccinated_vaccinated_irr)
-                                + (1 / unvaccinated_bivalent_booster_vaccinated_irr)
+                            1
+                            + (1 / unvaccinated_vaccinated_irr)
+                            + (1 / unvaccinated_bivalent_booster_vaccinated_irr)
                         )
-                        data[f"{age_group}_UV_multiplier"].iloc[i] = unvaccinated_multiplier
+                        data[f"{age_group}_UV_multiplier"].iloc[
+                            i
+                        ] = unvaccinated_multiplier
 
                         primary_series_vaccinated_multiplier = 1 / (
+                            unvaccinated_vaccinated_irr
+                            + 1
+                            + (
                                 unvaccinated_vaccinated_irr
-                                + 1
-                                + (unvaccinated_vaccinated_irr / unvaccinated_bivalent_booster_vaccinated_irr)
+                                / unvaccinated_bivalent_booster_vaccinated_irr
+                            )
                         )
-                        data[f"{age_group}_V_multiplier"].iloc[i] = primary_series_vaccinated_multiplier
+                        data[f"{age_group}_V_multiplier"].iloc[
+                            i
+                        ] = primary_series_vaccinated_multiplier
 
                         bivalent_booster_vaccinated_multiplier = 1 / (
+                            unvaccinated_bivalent_booster_vaccinated_irr
+                            + (
                                 unvaccinated_bivalent_booster_vaccinated_irr
-                                + (unvaccinated_bivalent_booster_vaccinated_irr / unvaccinated_vaccinated_irr)
-                                + 1
+                                / unvaccinated_vaccinated_irr
+                            )
+                            + 1
                         )
-                        data[f"{age_group}_BiV_multiplier"].iloc[i] = bivalent_booster_vaccinated_multiplier
+                        data[f"{age_group}_BiV_multiplier"].iloc[
+                            i
+                        ] = bivalent_booster_vaccinated_multiplier
+
+            week_end_dates = pd.Series(weeks).apply(
+                lambda x: epiweeks.Week.fromstring(str(x)).enddate()
+            )
+            data["week_end_date"] = [np.NAN for _ in range(len(data))]
+            for i in range(len(week_end_dates)):
+                data["week_end_date"].iloc[i] = week_end_dates.iloc[i]
 
             data["week_end_date"] = pd.to_datetime(data["week_end_date"])
 
@@ -696,9 +767,10 @@ class DataPreprocessing:
         cases_by_age_vaccination = self.cases_deaths_by_age_vaccination.loc[
             (self.cases_deaths_by_age_vaccination["outcome"] == "case")
             & (self.cases_deaths_by_age_vaccination["Vaccine product"] == "all_types")
-            ]
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=cases_by_age_vaccination,
+            weeks=cases_by_age_vaccination["MMWR week"].unique(),
             age_groups=np.unique(cases_by_age_vaccination["Age group"]),
             vaccination_groups=["UV", "PSV"],
             earliest_date="04/04/2021",
@@ -709,9 +781,10 @@ class DataPreprocessing:
         deaths_by_age_vaccination = self.cases_deaths_by_age_vaccination.loc[
             (self.cases_deaths_by_age_vaccination["outcome"] == "death")
             & (self.cases_deaths_by_age_vaccination["Vaccine product"] == "all_types")
-            ]
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=deaths_by_age_vaccination,
+            weeks=deaths_by_age_vaccination["MMWR week"].unique(),
             age_groups=np.unique(deaths_by_age_vaccination["Age group"]),
             vaccination_groups=["UV", "PSV"],
             earliest_date="04/04/2021",
@@ -723,9 +796,10 @@ class DataPreprocessing:
         cases_by_age_first_booster = self.cases_deaths_by_age_first_booster.loc[
             (self.cases_deaths_by_age_first_booster["outcome"] == "case")
             & (self.cases_deaths_by_age_first_booster["vaccine_product"] == "all_types")
-            ]
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=cases_by_age_first_booster,
+            weeks=cases_by_age_first_booster["mmwr_week"].unique(),
             age_groups=np.unique(cases_by_age_first_booster["age_group"]),
             vaccination_groups=["UV", "PSV", "BV1"],
             earliest_date="09/19/2021",
@@ -736,9 +810,10 @@ class DataPreprocessing:
         deaths_by_age_first_booster = self.cases_deaths_by_age_first_booster.loc[
             (self.cases_deaths_by_age_first_booster["outcome"] == "death")
             & (self.cases_deaths_by_age_first_booster["vaccine_product"] == "all_types")
-            ]
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=deaths_by_age_first_booster,
+            weeks=deaths_by_age_first_booster["mmwr_week"].unique(),
             age_groups=np.unique(deaths_by_age_first_booster["age_group"]),
             vaccination_groups=["UV", "PSV", "BV1"],
             earliest_date="09/19/2021",
@@ -749,10 +824,14 @@ class DataPreprocessing:
         # Cases Deaths by second booster vaccination.
         cases_by_age_second_booster = self.cases_deaths_by_age_second_booster.loc[
             (self.cases_deaths_by_age_second_booster["outcome"] == "case")
-            & (self.cases_deaths_by_age_second_booster["vaccine_product"] == "all_types")
-            ]
+            & (
+                self.cases_deaths_by_age_second_booster["vaccine_product"]
+                == "all_types"
+            )
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=cases_by_age_second_booster,
+            weeks=cases_by_age_second_booster["mmwr_week"].unique(),
             age_groups=np.unique(cases_by_age_second_booster["age_group"]),
             vaccination_groups=["UV", "PSV", "BV1", "BV2"],
             earliest_date="03/27/2022",
@@ -762,10 +841,14 @@ class DataPreprocessing:
 
         deaths_by_age_second_booster = self.cases_deaths_by_age_second_booster.loc[
             (self.cases_deaths_by_age_second_booster["outcome"] == "death")
-            & (self.cases_deaths_by_age_second_booster["vaccine_product"] == "all_types")
-            ]
+            & (
+                self.cases_deaths_by_age_second_booster["vaccine_product"]
+                == "all_types"
+            )
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=deaths_by_age_second_booster,
+            weeks=deaths_by_age_second_booster["mmwr_week"].unique(),
             age_groups=np.unique(deaths_by_age_second_booster["age_group"]),
             vaccination_groups=["UV", "PSV", "BV1", "BV2"],
             earliest_date="03/27/2022",
@@ -777,9 +860,10 @@ class DataPreprocessing:
         cases_by_age_bivalent_booster = self.cases_deaths_by_age_bivalent_booster.loc[
             (self.cases_deaths_by_age_bivalent_booster["outcome"] == "case")
             & (self.cases_deaths_by_age_bivalent_booster["mmwr_week"] >= 202238)
-            ]
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=cases_by_age_bivalent_booster,
+            weeks=cases_by_age_bivalent_booster["mmwr_week"].unique(),
             age_groups=np.unique(cases_by_age_bivalent_booster["age_group"]),
             vaccination_groups=["UV", "V", "BiV"],
             earliest_date="09/18/2022",
@@ -790,15 +874,19 @@ class DataPreprocessing:
         deaths_by_age_bivalent_booster = self.cases_deaths_by_age_bivalent_booster.loc[
             (self.cases_deaths_by_age_bivalent_booster["outcome"] == "death")
             & (self.cases_deaths_by_age_bivalent_booster["mmwr_week"] >= 202238)
-            ]
+        ]
         helper_preprocess_data_by_age_group_vaccination_status(
             data=deaths_by_age_bivalent_booster,
+            weeks=deaths_by_age_bivalent_booster["mmwr_week"].unique(),
             age_groups=np.unique(deaths_by_age_bivalent_booster["age_group"]),
             vaccination_groups=["UV", "V", "BiV"],
             earliest_date="09/25/2022",
             latest_date="03/04/2023",
             output_file_name="deaths_by_age_bivalent_booster_vaccination.csv",
         )
+
+    def preprocess_hospitalization_data_by_vaccination_status(self):
+        return
 
     @staticmethod
     def drop_columns(data, columns):
@@ -812,27 +900,27 @@ class DataPreprocessing:
 data__paths = {
     "state_abbreviations": f"{data_directory}/miscellaneous/state_abbreviations.json",
     "testing": f"{data_directory}/us_department_of_health_and_human_services/COVID-19_Diagnostic_Laboratory_Testing"
-               f"__PCR_Testing__Time_Series.csv",
+    f"__PCR_Testing__Time_Series.csv",
     "hospitalization": f"{data_directory}/us_department_of_health_and_human_services/COVID-19_Reported_Patient_Impact"
-                       f"_and_Hospital_Capacity_by_State_"
-                       f"Timeseries__RAW_.csv",
+    f"_and_Hospital_Capacity_by_State_"
+    f"Timeseries__RAW_.csv",
     "vaccination": f"{data_directory}/cdc/vaccination_distribution_and_coverage/COVID-19_Vaccinations_in_the_"
-                   f"United_States_Jurisdiction.csv",
+    f"United_States_Jurisdiction.csv",
     "google_mobility_report": f"{data_directory}/mobility/Google/Global_Mobility_Report.csv",
     "cases_and_outcomes": f"{data_directory}/cases_and_outcomes/",
     "cases_deaths_by_age_vaccination": f"{data_directory}/cdc/vaccination_effectiveness_and_breakthrough_surveillance/"
-                                       f"cases_deaths_by_age_vaccination.csv",
+    f"cases_deaths_by_age_vaccination.csv",
     "cases_deaths_by_age_booster": f"{data_directory}/cdc/vaccination_effectiveness_and_breakthrough_surveillance/"
-                                   f"cases_deaths_by_age_booster.csv",
+    f"cases_deaths_by_age_booster.csv",
     "cases_deaths_by_age_second_booster": f"{data_directory}/cdc/"
-                                          f"vaccination_effectiveness_and_breakthrough_surveillance/"
-                                          f"cases_deaths_by_age_second_booster.csv",
+    f"vaccination_effectiveness_and_breakthrough_surveillance/"
+    f"cases_deaths_by_age_second_booster.csv",
     "cases_deaths_by_age_bivalent_booster": f"{data_directory}/cdc/"
-                                            f"vaccination_effectiveness_and_breakthrough_surveillance/"
-                                            f"cases_deaths_by_age_bivalent_booster.csv",
+    f"vaccination_effectiveness_and_breakthrough_surveillance/"
+    f"cases_deaths_by_age_bivalent_booster.csv",
     "hospitalizations_by_vaccination": f"{data_directory}/cdc/"
-                                       f"vaccination_effectiveness_and_breakthrough_surveillance/"
-                                       f"hospitalizations_by_vaccination.csv",
+    f"vaccination_effectiveness_and_breakthrough_surveillance/"
+    f"hospitalizations_by_vaccination.csv",
 }
 
 data_preprocessing = DataPreprocessing(data_paths=data__paths)
