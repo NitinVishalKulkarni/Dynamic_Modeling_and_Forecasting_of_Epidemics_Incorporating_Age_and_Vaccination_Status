@@ -397,7 +397,7 @@ class ParameterInitializer:
         state_populations = {}
         for state in self.states:
             state_population = us_population.loc[
-                us_population["Geographic Area"] == state, "4/1/2020"
+                us_population["Geographic Area"] == state, "7/1/2021"
             ].iloc[0]
             state_populations[state] = int(state_population.replace(",", ""))
 

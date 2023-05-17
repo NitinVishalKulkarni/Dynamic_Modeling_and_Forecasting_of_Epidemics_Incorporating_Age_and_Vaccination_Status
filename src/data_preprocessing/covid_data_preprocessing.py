@@ -31,7 +31,7 @@ class DataPreprocessing:
         self.us_testing = pd.read_csv(data_paths["testing"])
         self.us_hospitalizations = pd.read_csv(data_paths["hospitalization"])
         self.us_vaccinations = pd.read_csv(data_paths["vaccination"])
-        self.google_mobility_report = pd.read_csv(data_paths["google_mobility_report"])
+        # self.google_mobility_report = pd.read_csv(data_paths["google_mobility_report"])
         self.cases_deaths_by_age_vaccination = pd.read_csv(
             data_paths["cases_deaths_by_age_vaccination"]
         )
@@ -46,6 +46,9 @@ class DataPreprocessing:
         )
         self.hospitalizations_by_vaccination = pd.read_csv(
             self.data_paths["hospitalizations_by_vaccination"]
+        )
+        self.hospitalizations_by_age = pd.read_csv(
+            self.data_paths["hospitalizations_by_age"]
         )
 
     @staticmethod
@@ -410,7 +413,9 @@ class DataPreprocessing:
                 state_hospitalizations, how="inner", on="date"
             )
             state_final = state_final.merge(state_testing, how="inner", on="date")
-            state_final = state_final.merge(state_mobility, how="inner", on="date")
+            state_final = state_final.merge(
+                state_mobility, how="outer", on="date"
+            ).iloc[:864]
 
             state_final.to_csv(
                 f"{data_directory}/processed_state_data/{state}.csv", index=False
@@ -446,11 +451,15 @@ class DataPreprocessing:
 
             for age_group in age_groups:
                 for vaccination_group in vaccination_groups:
-                    data[f"{age_group}_{vaccination_group}_multiplier"] = [
+                    data[f"{age_group}_{vaccination_group}_IR"] = [
                         np.NAN for _ in range(len(data))
                     ]
+                    data[f"{age_group}_{vaccination_group}_Population"] = [
+                        np.NAN for _ in range(len(data))
+                    ]
+                    imputation_columns.append(f"{age_group}_{vaccination_group}_IR")
                     imputation_columns.append(
-                        f"{age_group}_{vaccination_group}_multiplier"
+                        f"{age_group}_{vaccination_group}_Population"
                     )
 
             # Primary Series Vaccination
@@ -460,31 +469,80 @@ class DataPreprocessing:
                         data.loc[(data["MMWR week"] == week)]["Age group"]
                     )
                     for age_group in week_age_groups:
-                        unvaccinated_primary_series_vaccinated_irr = (
+                        # Updated:
+
+                        # Incidence Rates:
+                        unvaccinated_ir = (
                             data.loc[
                                 (data["MMWR week"] == week)
                                 & (data["Age group"] == age_group)
-                            ]["Crude IRR"].iloc[0]
+                            ]["Crude unvax IR"].iloc[0]
                             if age_group != "all_ages_adj"
                             else data.loc[
                                 (data["MMWR week"] == week)
                                 & (data["Age group"] == age_group)
-                            ]["Age adjusted IRR"].iloc[0]
+                            ]["Age adjusted unvax IR"].iloc[0]
                         )
-                        unvaccinated_multiplier = (
-                            unvaccinated_primary_series_vaccinated_irr
-                            / (unvaccinated_primary_series_vaccinated_irr + 1)
-                        )
+                        data[f"{age_group}_UV_IR"].iloc[i] = unvaccinated_ir
 
-                        data[f"{age_group}_UV_multiplier"].iloc[
-                            i
-                        ] = unvaccinated_multiplier
-                        primary_series_vaccinated_multiplier = (
-                            1 - unvaccinated_multiplier
+                        primary_series_vaccinated_ir = (
+                            data.loc[
+                                (data["MMWR week"] == week)
+                                & (data["Age group"] == age_group)
+                            ]["Crude vax IR"].iloc[0]
+                            if age_group != "all_ages_adj"
+                            else data.loc[
+                                (data["MMWR week"] == week)
+                                & (data["Age group"] == age_group)
+                            ]["Age adjusted vax IR"].iloc[0]
                         )
-                        data[f"{age_group}_PSV_multiplier"].iloc[
+                        data[f"{age_group}_PSV_IR"].iloc[
                             i
-                        ] = primary_series_vaccinated_multiplier
+                        ] = primary_series_vaccinated_ir
+
+                        # Populations:
+                        unvaccinated_population = data.loc[
+                            (data["MMWR week"] == week)
+                            & (data["Age group"] == age_group)
+                        ]["Unvaccinated population"].iloc[0]
+                        data[f"{age_group}_UV_Population"].iloc[
+                            i
+                        ] = unvaccinated_population
+
+                        primary_series_vaccinated_population = data.loc[
+                            (data["MMWR week"] == week)
+                            & (data["Age group"] == age_group)
+                        ]["Fully vaccinated population"].iloc[0]
+                        data[f"{age_group}_PSV_Population"].iloc[
+                            i
+                        ] = primary_series_vaccinated_population
+
+                        # # Old:
+                        # unvaccinated_primary_series_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["MMWR week"] == week)
+                        #         & (data["Age group"] == age_group)
+                        #     ]["Crude IRR"].iloc[0]
+                        #     if age_group != "all_ages_adj"
+                        #     else data.loc[
+                        #         (data["MMWR week"] == week)
+                        #         & (data["Age group"] == age_group)
+                        #     ]["Age adjusted IRR"].iloc[0]
+                        # )
+                        # unvaccinated_multiplier = (
+                        #     unvaccinated_primary_series_vaccinated_irr
+                        #     / (unvaccinated_primary_series_vaccinated_irr + 1)
+                        # )
+                        #
+                        # data[f"{age_group}_UV_multiplier"].iloc[
+                        #     i
+                        # ] = unvaccinated_multiplier
+                        # primary_series_vaccinated_multiplier = (
+                        #     1 - unvaccinated_multiplier
+                        # )
+                        # data[f"{age_group}_PSV_multiplier"].iloc[
+                        #     i
+                        # ] = primary_series_vaccinated_multiplier
 
             # First Booster Vaccination
             elif vaccination_groups == ["UV", "PSV", "BV1"]:
@@ -493,64 +551,130 @@ class DataPreprocessing:
                         data.loc[(data["mmwr_week"] == week)]["age_group"]
                     )
                     for age_group in week_age_groups:
-                        unvaccinated_primary_series_vaccinated_irr = (
+                        # Incidence Rates:
+                        unvaccinated_ir = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["crude_irr"].iloc[0]
+                            ]["crude_unvax_ir"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["age_adj_irr"].iloc[0]
+                            ]["age_adj_unvax_ir"].iloc[0]
                         )
+                        data[f"{age_group}_UV_IR"].iloc[i] = unvaccinated_ir
 
-                        unvaccinated_first_booster_vaccinated_irr = (
+                        primary_series_ir = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["crude_booster_irr"].iloc[0]
+                            ]["crude_primary_series_only_ir"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["age_adj_booster_irr"].iloc[0]
+                            ]["age_adj_vax_ir"].iloc[0]
                         )
+                        data[f"{age_group}_PSV_IR"].iloc[i] = primary_series_ir
 
-                        unvaccinated_multiplier = 1 / (
-                            1
-                            + (1 / unvaccinated_primary_series_vaccinated_irr)
-                            + (1 / unvaccinated_first_booster_vaccinated_irr)
+                        first_booster_ir = (
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["crude_booster_ir"].iloc[0]
+                            if age_group != "all_ages"
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["age_adj_booster_ir"].iloc[0]
                         )
-                        data[f"{age_group}_UV_multiplier"].iloc[
-                            i
-                        ] = unvaccinated_multiplier
-                        primary_series_vaccinated_multiplier = 1 / (
-                            unvaccinated_primary_series_vaccinated_irr
-                            + 1
-                            + (
-                                1
-                                / (
-                                    unvaccinated_first_booster_vaccinated_irr
-                                    / unvaccinated_primary_series_vaccinated_irr
-                                )
-                            )
-                        )
-                        data[f"{age_group}_PSV_multiplier"].iloc[
-                            i
-                        ] = primary_series_vaccinated_multiplier
+                        data[f"{age_group}_BV1_IR"].iloc[i] = first_booster_ir
 
-                        first_booster_vaccinated_multiplier = 1 / (
-                            unvaccinated_first_booster_vaccinated_irr
-                            + (
-                                unvaccinated_first_booster_vaccinated_irr
-                                / unvaccinated_primary_series_vaccinated_irr
-                            )
-                            + 1
-                        )
-                        data[f"{age_group}_BV1_multiplier"].iloc[
+                        # Populations:
+                        unvaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                        ]["unvaccinated_population"].iloc[0]
+                        data[f"{age_group}_UV_Population"].iloc[
                             i
-                        ] = first_booster_vaccinated_multiplier
+                        ] = unvaccinated_population
+
+                        primary_series_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                        ]["primary_series_only_population"].iloc[0]
+                        data[f"{age_group}_PSV_Population"].iloc[
+                            i
+                        ] = primary_series_population
+
+                        first_booster_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                        ]["boosted_population"].iloc[0]
+                        data[f"{age_group}_BV1_Population"].iloc[
+                            i
+                        ] = first_booster_population
+
+                        # # Old:
+                        # unvaccinated_primary_series_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["crude_irr"].iloc[0]
+                        #     if age_group != "all_ages"
+                        #     else data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["age_adj_irr"].iloc[0]
+                        # )
+                        #
+                        # unvaccinated_first_booster_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["crude_booster_irr"].iloc[0]
+                        #     if age_group != "all_ages"
+                        #     else data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["age_adj_booster_irr"].iloc[0]
+                        # )
+                        #
+                        # unvaccinated_multiplier = 1 / (
+                        #     1
+                        #     + (1 / unvaccinated_primary_series_vaccinated_irr)
+                        #     + (1 / unvaccinated_first_booster_vaccinated_irr)
+                        # )
+                        # data[f"{age_group}_UV_multiplier"].iloc[
+                        #     i
+                        # ] = unvaccinated_multiplier
+                        # primary_series_vaccinated_multiplier = 1 / (
+                        #     unvaccinated_primary_series_vaccinated_irr
+                        #     + 1
+                        #     + (
+                        #         1
+                        #         / (
+                        #             unvaccinated_first_booster_vaccinated_irr
+                        #             / unvaccinated_primary_series_vaccinated_irr
+                        #         )
+                        #     )
+                        # )
+                        # data[f"{age_group}_PSV_multiplier"].iloc[
+                        #     i
+                        # ] = primary_series_vaccinated_multiplier
+                        #
+                        # first_booster_vaccinated_multiplier = 1 / (
+                        #     unvaccinated_first_booster_vaccinated_irr
+                        #     + (
+                        #         unvaccinated_first_booster_vaccinated_irr
+                        #         / unvaccinated_primary_series_vaccinated_irr
+                        #     )
+                        #     + 1
+                        # )
+                        # data[f"{age_group}_BV1_multiplier"].iloc[
+                        #     i
+                        # ] = first_booster_vaccinated_multiplier
 
             # Second Booster Vaccination
             elif vaccination_groups == ["UV", "PSV", "BV1", "BV2"]:
@@ -559,105 +683,199 @@ class DataPreprocessing:
                         data.loc[(data["mmwr_week"] == week)]["age_group"]
                     )
                     for age_group in week_age_groups:
-                        unvaccinated_primary_series_vaccinated_irr = (
+                        # Updated:
+                        # Incidence Rates
+                        unvaccinated_ir = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["crude_irr"].iloc[0]
+                            ]["crude_unvax_ir"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["age_adj_vax_irr"].iloc[0]
+                            ]["age_adj_unvax_ir"].iloc[0]
                         )
+                        data[f"{age_group}_UV_IR"].iloc[i] = unvaccinated_ir
 
-                        unvaccinated_first_booster_vaccinated_irr = (
+                        primary_series_vaccinated_ir = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["crude_one_booster_irr"].iloc[0]
+                            ]["crude_vax_ir"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["age_adj_one_booster_irr"].iloc[0]
+                            ]["age_adj_vax_ir"].iloc[0]
                         )
+                        data[f"{age_group}_PSV_IR"].iloc[
+                            i
+                        ] = primary_series_vaccinated_ir
 
-                        unvaccinated_second_booster_vaccinated_irr = (
+                        first_booster_vaccinated_ir = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["crude_two_booster_irr"].iloc[0]
+                            ]["crude_one_booster_ir"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
-                            ]["age_adj_two_booster_irr"].iloc[0]
+                            ]["age_adj_one_booster_ir"].iloc[0]
                         )
-
-                        unvaccinated_multiplier = 1 / (
-                            1
-                            + (1 / unvaccinated_primary_series_vaccinated_irr)
-                            + (1 / unvaccinated_first_booster_vaccinated_irr)
-                            + (1 / unvaccinated_second_booster_vaccinated_irr)
-                        )
-                        data[f"{age_group}_UV_multiplier"].iloc[
+                        data[f"{age_group}_BV1_IR"].iloc[
                             i
-                        ] = unvaccinated_multiplier
+                        ] = first_booster_vaccinated_ir
 
-                        primary_series_vaccinated_multiplier = 1 / (
-                            unvaccinated_primary_series_vaccinated_irr
-                            + 1
-                            + (
-                                1
-                                / (
-                                    unvaccinated_first_booster_vaccinated_irr
-                                    / unvaccinated_primary_series_vaccinated_irr
-                                )
-                            )
-                            + (
-                                1
-                                / (
-                                    unvaccinated_second_booster_vaccinated_irr
-                                    / unvaccinated_primary_series_vaccinated_irr
-                                )
-                            )
+                        second_booster_vaccinated_ir = (
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["crude_two_booster_ir"].iloc[0]
+                            if age_group != "all_ages"
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                            ]["age_adj_two_booster_ir"].iloc[0]
                         )
-                        data[f"{age_group}_PSV_multiplier"].iloc[
+                        data[f"{age_group}_BV2_IR"].iloc[
                             i
-                        ] = primary_series_vaccinated_multiplier
+                        ] = second_booster_vaccinated_ir
 
-                        first_booster_vaccinated_multiplier = 1 / (
-                            unvaccinated_first_booster_vaccinated_irr
-                            + (
-                                unvaccinated_first_booster_vaccinated_irr
-                                / unvaccinated_primary_series_vaccinated_irr
-                            )
-                            + 1
-                            + (
-                                unvaccinated_first_booster_vaccinated_irr
-                                / unvaccinated_second_booster_vaccinated_irr
-                            )
-                        )
-                        data[f"{age_group}_BV1_multiplier"].iloc[
+                        # Populations:
+                        unvaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                        ]["unvaccinated_population"].iloc[0]
+                        data[f"{age_group}_UV_Population"].iloc[
                             i
-                        ] = first_booster_vaccinated_multiplier
+                        ] = unvaccinated_population
 
-                        second_booster_vaccinated_multiplier = 1 / (
-                            unvaccinated_second_booster_vaccinated_irr
-                            + (
-                                unvaccinated_second_booster_vaccinated_irr
-                                / unvaccinated_primary_series_vaccinated_irr
-                            )
-                            + (
-                                unvaccinated_second_booster_vaccinated_irr
-                                / unvaccinated_first_booster_vaccinated_irr
-                            )
-                            + 1
-                        )
-                        data[f"{age_group}_BV2_multiplier"].iloc[
+                        primary_series_vaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                        ]["fully_vaccinated_population"].iloc[0]
+                        data[f"{age_group}_PSV_Population"].iloc[
                             i
-                        ] = second_booster_vaccinated_multiplier
+                        ] = primary_series_vaccinated_population
+
+                        first_booster_vaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                        ]["one_booster_population"].iloc[0]
+                        data[f"{age_group}_BV1_Population"].iloc[
+                            i
+                        ] = first_booster_vaccinated_population
+
+                        second_booster_vaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                        ]["two_booster_population"].iloc[0]
+                        data[f"{age_group}_BV2_Population"].iloc[
+                            i
+                        ] = second_booster_vaccinated_population
+
+                        # # Old:
+                        # unvaccinated_primary_series_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["crude_irr"].iloc[0]
+                        #     if age_group != "all_ages"
+                        #     else data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["age_adj_vax_irr"].iloc[0]
+                        # )
+                        #
+                        # unvaccinated_first_booster_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["crude_one_booster_irr"].iloc[0]
+                        #     if age_group != "all_ages"
+                        #     else data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["age_adj_one_booster_irr"].iloc[0]
+                        # )
+                        #
+                        # unvaccinated_second_booster_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["crude_two_booster_irr"].iloc[0]
+                        #     if age_group != "all_ages"
+                        #     else data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #     ]["age_adj_two_booster_irr"].iloc[0]
+                        # )
+                        #
+                        # unvaccinated_multiplier = 1 / (
+                        #     1
+                        #     + (1 / unvaccinated_primary_series_vaccinated_irr)
+                        #     + (1 / unvaccinated_first_booster_vaccinated_irr)
+                        #     + (1 / unvaccinated_second_booster_vaccinated_irr)
+                        # )
+                        # data[f"{age_group}_UV_multiplier"].iloc[
+                        #     i
+                        # ] = unvaccinated_multiplier
+                        #
+                        # primary_series_vaccinated_multiplier = 1 / (
+                        #     unvaccinated_primary_series_vaccinated_irr
+                        #     + 1
+                        #     + (
+                        #         1
+                        #         / (
+                        #             unvaccinated_first_booster_vaccinated_irr
+                        #             / unvaccinated_primary_series_vaccinated_irr
+                        #         )
+                        #     )
+                        #     + (
+                        #         1
+                        #         / (
+                        #             unvaccinated_second_booster_vaccinated_irr
+                        #             / unvaccinated_primary_series_vaccinated_irr
+                        #         )
+                        #     )
+                        # )
+                        # data[f"{age_group}_PSV_multiplier"].iloc[
+                        #     i
+                        # ] = primary_series_vaccinated_multiplier
+                        #
+                        # first_booster_vaccinated_multiplier = 1 / (
+                        #     unvaccinated_first_booster_vaccinated_irr
+                        #     + (
+                        #         unvaccinated_first_booster_vaccinated_irr
+                        #         / unvaccinated_primary_series_vaccinated_irr
+                        #     )
+                        #     + 1
+                        #     + (
+                        #         unvaccinated_first_booster_vaccinated_irr
+                        #         / unvaccinated_second_booster_vaccinated_irr
+                        #     )
+                        # )
+                        # data[f"{age_group}_BV1_multiplier"].iloc[
+                        #     i
+                        # ] = first_booster_vaccinated_multiplier
+                        #
+                        # second_booster_vaccinated_multiplier = 1 / (
+                        #     unvaccinated_second_booster_vaccinated_irr
+                        #     + (
+                        #         unvaccinated_second_booster_vaccinated_irr
+                        #         / unvaccinated_primary_series_vaccinated_irr
+                        #     )
+                        #     + (
+                        #         unvaccinated_second_booster_vaccinated_irr
+                        #         / unvaccinated_first_booster_vaccinated_irr
+                        #     )
+                        #     + 1
+                        # )
+                        # data[f"{age_group}_BV2_multiplier"].iloc[
+                        #     i
+                        # ] = second_booster_vaccinated_multiplier
 
             # Bivalent Booster Vaccination
             elif vaccination_groups == ["UV", "V", "BiV"]:
@@ -666,21 +884,39 @@ class DataPreprocessing:
                         data.loc[(data["mmwr_week"] == week)]["age_group"]
                     )
                     for age_group in week_age_groups:
-                        unvaccinated_vaccinated_irr = (
+                        # Updated:
+                        # Incidence Rates:
+                        unvaccinated_ir = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
                                 & (data["vaccination_status"] == "vaccinated")
-                            ]["crude_irr"].iloc[0]
+                            ]["crude_unvax_ir"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
                                 & (data["vaccination_status"] == "vaccinated")
-                            ]["age_adj_irr"].iloc[0]
+                            ]["age_adj_unvax_ir"].iloc[0]
                         )
+                        data[f"{age_group}_UV_IR"].iloc[i] = unvaccinated_ir
 
-                        unvaccinated_bivalent_booster_vaccinated_irr = (
+                        vaccinated_ir = (
+                            data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                                & (data["vaccination_status"] == "vaccinated")
+                            ]["crude_vax_ir"].iloc[0]
+                            if age_group != "all_ages"
+                            else data.loc[
+                                (data["mmwr_week"] == week)
+                                & (data["age_group"] == age_group)
+                                & (data["vaccination_status"] == "vaccinated")
+                            ]["age_adj_vax_ir"].iloc[0]
+                        )
+                        data[f"{age_group}_V_IR"].iloc[i] = vaccinated_ir
+
+                        bivalent_booster_vaccinated_ir = (
                             data.loc[
                                 (data["mmwr_week"] == week)
                                 & (data["age_group"] == age_group)
@@ -688,7 +924,7 @@ class DataPreprocessing:
                                     data["vaccination_status"]
                                     == "vax with updated booster"
                                 )
-                            ]["crude_irr"].iloc[0]
+                            ]["crude_vax_ir"].iloc[0]
                             if age_group != "all_ages"
                             else data.loc[
                                 (data["mmwr_week"] == week)
@@ -697,41 +933,107 @@ class DataPreprocessing:
                                     data["vaccination_status"]
                                     == "vax with updated booster"
                                 )
-                            ]["age_adj_irr"].iloc[0]
+                            ]["age_adj_vax_ir"].iloc[0]
                         )
-
-                        unvaccinated_multiplier = 1 / (
-                            1
-                            + (1 / unvaccinated_vaccinated_irr)
-                            + (1 / unvaccinated_bivalent_booster_vaccinated_irr)
-                        )
-                        data[f"{age_group}_UV_multiplier"].iloc[
+                        data[f"{age_group}_BiV_IR"].iloc[
                             i
-                        ] = unvaccinated_multiplier
+                        ] = bivalent_booster_vaccinated_ir
 
-                        primary_series_vaccinated_multiplier = 1 / (
-                            unvaccinated_vaccinated_irr
-                            + 1
-                            + (
-                                unvaccinated_vaccinated_irr
-                                / unvaccinated_bivalent_booster_vaccinated_irr
-                            )
-                        )
-                        data[f"{age_group}_V_multiplier"].iloc[
+                        # Populations:
+                        unvaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                            & (data["vaccination_status"] == "vaccinated")
+                        ]["unvaccinated_population"].iloc[0]
+                        data[f"{age_group}_UV_Population"].iloc[
                             i
-                        ] = primary_series_vaccinated_multiplier
+                        ] = unvaccinated_population
 
-                        bivalent_booster_vaccinated_multiplier = 1 / (
-                            unvaccinated_bivalent_booster_vaccinated_irr
-                            + (
-                                unvaccinated_bivalent_booster_vaccinated_irr
-                                / unvaccinated_vaccinated_irr
-                            )
-                            + 1
-                        )
-                        data[f"{age_group}_BiV_multiplier"].iloc[
+                        vaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                            & (data["vaccination_status"] == "vaccinated")
+                        ]["vaccinated_population"].iloc[0]
+                        data[f"{age_group}_V_Population"].iloc[
                             i
-                        ] = bivalent_booster_vaccinated_multiplier
+                        ] = vaccinated_population
+
+                        bivalent_booster_vaccinated_population = data.loc[
+                            (data["mmwr_week"] == week)
+                            & (data["age_group"] == age_group)
+                            & (data["vaccination_status"] == "vax with updated booster")
+                        ]["vaccinated_population"].iloc[0]
+                        data[f"{age_group}_BiV_Population"].iloc[
+                            i
+                        ] = bivalent_booster_vaccinated_population
+
+                        # Old:
+                        # unvaccinated_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #         & (data["vaccination_status"] == "vaccinated")
+                        #     ]["crude_irr"].iloc[0]
+                        #     if age_group != "all_ages"
+                        #     else data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #         & (data["vaccination_status"] == "vaccinated")
+                        #     ]["age_adj_irr"].iloc[0]
+                        # )
+                        #
+                        # unvaccinated_bivalent_booster_vaccinated_irr = (
+                        #     data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #         & (
+                        #             data["vaccination_status"]
+                        #             == "vax with updated booster"
+                        #         )
+                        #     ]["crude_irr"].iloc[0]
+                        #     if age_group != "all_ages"
+                        #     else data.loc[
+                        #         (data["mmwr_week"] == week)
+                        #         & (data["age_group"] == age_group)
+                        #         & (
+                        #             data["vaccination_status"]
+                        #             == "vax with updated booster"
+                        #         )
+                        #     ]["age_adj_irr"].iloc[0]
+                        # )
+                        #
+                        # unvaccinated_multiplier = 1 / (
+                        #     1
+                        #     + (1 / unvaccinated_vaccinated_irr)
+                        #     + (1 / unvaccinated_bivalent_booster_vaccinated_irr)
+                        # )
+                        # data[f"{age_group}_UV_multiplier"].iloc[
+                        #     i
+                        # ] = unvaccinated_multiplier
+                        #
+                        # primary_series_vaccinated_multiplier = 1 / (
+                        #     unvaccinated_vaccinated_irr
+                        #     + 1
+                        #     + (
+                        #         unvaccinated_vaccinated_irr
+                        #         / unvaccinated_bivalent_booster_vaccinated_irr
+                        #     )
+                        # )
+                        # data[f"{age_group}_V_multiplier"].iloc[
+                        #     i
+                        # ] = primary_series_vaccinated_multiplier
+                        #
+                        # bivalent_booster_vaccinated_multiplier = 1 / (
+                        #     unvaccinated_bivalent_booster_vaccinated_irr
+                        #     + (
+                        #         unvaccinated_bivalent_booster_vaccinated_irr
+                        #         / unvaccinated_vaccinated_irr
+                        #     )
+                        #     + 1
+                        # )
+                        # data[f"{age_group}_BiV_multiplier"].iloc[
+                        #     i
+                        # ] = bivalent_booster_vaccinated_multiplier
 
             week_end_dates = pd.Series(weeks).apply(
                 lambda x: epiweeks.Week.fromstring(str(x)).enddate()
@@ -885,7 +1187,86 @@ class DataPreprocessing:
             output_file_name="deaths_by_age_bivalent_booster_vaccination.csv",
         )
 
-    def preprocess_hospitalization_data_by_vaccination_status(self):
+    def preprocess_hospitalization_data_by_age_vaccination_status(self):
+        """Note: This is a temporary preprocessing code which needs to be further preprocessed in Excel.
+        TODO: Update the code."""
+
+        # Age
+        data = self.hospitalizations_by_age
+        weeks = data["WEEK_NUMBER"].unique()
+        week_end_dates = pd.Series(weeks).apply(
+            lambda x: epiweeks.Week.fromstring(str(x)).enddate()
+        )
+        data["week_end_date"] = [np.NAN for _ in range(len(data))]
+        for i in range(len(week_end_dates)):
+            data["week_end_date"].iloc[i] = week_end_dates.iloc[i]
+
+        data["week_end_date"] = pd.to_datetime(data["week_end_date"])
+
+        earliest_date = "2020-03-14"
+        latest_date = "2023-05-06"
+
+        dates = pd.date_range(earliest_date, latest_date, freq="d")
+        dates = pd.DataFrame(dates, columns=["week_end_date"])
+        data = dates.merge(data, how="outer", on="week_end_date")
+
+        imputation_columns = ["0-4 YR", "5-17 YR", "18-49 YR", "50-64 YR", "65+ YR"]
+
+        data.rename(columns={"week_end_date": "date"}, inplace=True)
+        data = data[["date"] + imputation_columns].dropna(how="all")
+
+        data = self.data_imputer(
+            data=data,
+            imputation_columns=imputation_columns,
+            imputation_method="same",
+        )
+
+        data.to_csv(
+            f"{data_directory}/data_by_age_vaccination_status/hospitalizations_by_age.csv",
+            index=False,
+        )
+
+        # Vaccination Status:
+        data = self.hospitalizations_by_vaccination
+        data["date"] = pd.to_datetime(data["date"])
+
+        earliest_date = "01-01-2021"
+        latest_date = "02-28-2023"
+
+        dates = pd.date_range(earliest_date, latest_date, freq="d")
+        dates = pd.DataFrame(dates, columns=["date"])
+        data = dates.merge(data, how="outer", on="date")
+
+        imputation_columns = ["UV", "PSV", "BV1", "BV2", "V", "BiV"]
+
+        data = data[["date"] + imputation_columns].dropna(how="all")
+
+        data = self.data_imputer(
+            data=data,
+            imputation_columns=imputation_columns,
+            imputation_method="same",
+        )
+
+        data.to_csv(
+            f"{data_directory}/data_by_age_vaccination_status/hospitalizations_by_vaccination_.csv",
+            index=False,
+        )
+
+        # Merging the two.
+        by_age = pd.read_csv(
+            f"{data_directory}/data_by_age_vaccination_status/hospitalizations_by_age_.csv"
+        )
+        by_vaccination = pd.read_csv(
+            f"{data_directory}/data_by_age_vaccination_status/hospitalizations_by_vaccination_.csv"
+        )
+
+        by_age["date"] = pd.to_datetime(by_age["date"])
+        by_vaccination["date"] = pd.to_datetime(by_vaccination["date"])
+
+        by_vaccination = by_age.merge(by_vaccination, how="outer", on="date")
+        by_vaccination.to_csv(
+            f"{data_directory}/data_by_age_vaccination_status/hospitalization_by_age_vaccination.csv"
+        )
         return
 
     @staticmethod
@@ -921,6 +1302,8 @@ data__paths = {
     "hospitalizations_by_vaccination": f"{data_directory}/cdc/"
     f"vaccination_effectiveness_and_breakthrough_surveillance/"
     f"hospitalizations_by_vaccination.csv",
+    "hospitalizations_by_age": f"{data_directory}/cdc/vaccination_effectiveness_and_breakthrough_surveillance/"
+    f"hospitalizations_by_age.csv",
 }
 
 data_preprocessing = DataPreprocessing(data_paths=data__paths)
@@ -930,4 +1313,5 @@ data_preprocessing = DataPreprocessing(data_paths=data__paths)
 # data_preprocessing.create_state_mobility_data()
 # data_preprocessing.preprocess_cases_and_outcomes_data()
 # data_preprocessing.create_state_final_dataset()
-data_preprocessing.preprocess_data_by_age_group_vaccination_status()
+# data_preprocessing.preprocess_data_by_age_group_vaccination_status()
+# data_preprocessing.preprocess_hospitalization_data_by_age_vaccination_status()
