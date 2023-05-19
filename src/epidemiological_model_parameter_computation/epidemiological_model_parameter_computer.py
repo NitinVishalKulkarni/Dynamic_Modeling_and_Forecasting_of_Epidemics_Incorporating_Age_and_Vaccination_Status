@@ -1,7 +1,6 @@
 # Imports
 import json
 import os
-import sys
 from collections import defaultdict
 from time import time
 
@@ -15,6 +14,7 @@ from src.settings import data_directory
 from src.utilities.parameter_initializer import ParameterInitializer
 
 
+# noinspection DuplicatedCode
 class EpidemiologicalModelParameterComputer:
     """This class computes the parameters for the epidemiological model."""
 
@@ -273,72 +273,239 @@ class EpidemiologicalModelParameterComputer:
             # Sub-compartments
             (
                 s_uv,
-                s_fv,
-                s_bv,
-                e_uv,
-                e_fv,
-                e_bv,
+                s_v,
+                s_biv,
                 i_uv,
-                i_fv,
-                i_bv,
+                i_v,
+                i_biv,
                 h_uv,
-                h_fv,
-                h_bv,
+                h_v,
+                h_biv,
                 r_uv,
-                r_fv,
-                r_bv,
-                d_uv,
-                d_fv,
-                d_bv,
+                r_v,
+                r_biv,
+                dec_uv,
+                dec_v,
+                dec_biv,
+                # det_uv,
+                # det_v,
+                # det_biv,
+                s_5_17_uv,
+                s_5_17_v,
+                s_5_17_biv,
+                s_18_49_uv,
+                s_18_49_v,
+                s_18_49_biv,
+                s_50_64_uv,
+                s_50_64_v,
+                s_50_64_biv,
+                s_65_plus_uv,
+                s_65_plus_v,
+                s_65_plus_biv,
+                i_5_17_uv,
+                i_5_17_v,
+                i_5_17_biv,
+                i_18_49_uv,
+                i_18_49_v,
+                i_18_49_biv,
+                i_50_64_uv,
+                i_50_64_v,
+                i_50_64_biv,
+                i_65_plus_uv,
+                i_65_plus_v,
+                i_65_plus_biv,
+                h_5_17_uv,
+                h_5_17_v,
+                h_5_17_biv,
+                h_18_49_uv,
+                h_18_49_v,
+                h_18_49_biv,
+                h_50_64_uv,
+                h_50_64_v,
+                h_50_64_biv,
+                h_65_plus_uv,
+                h_65_plus_v,
+                h_65_plus_biv,
+                r_5_17_uv,
+                r_5_17_v,
+                r_5_17_biv,
+                r_18_49_uv,
+                r_18_49_v,
+                r_18_49_biv,
+                r_50_64_uv,
+                r_50_64_v,
+                r_50_64_biv,
+                r_65_plus_uv,
+                r_65_plus_v,
+                r_65_plus_biv,
+                dec_5_17_uv,
+                dec_5_17_v,
+                dec_5_17_biv,
+                dec_18_49_uv,
+                dec_18_49_v,
+                dec_18_49_biv,
+                dec_50_64_uv,
+                dec_50_64_v,
+                dec_50_64_biv,
+                dec_65_plus_uv,
+                dec_65_plus_v,
+                dec_65_plus_biv,
+                # det_5_17_uv,
+                # det_5_17_v,
+                # det_5_17_biv,
+                # det_18_49_uv,
+                # det_18_49_v,
+                # det_18_49_biv,
+                # det_50_64_uv,
+                # det_50_64_v,
+                # det_50_64_biv,
+                # det_65_plus_uv,
+                # det_65_plus_v,
+                # det_65_plus_biv,
             ) = y
 
-            if i_bv < 0:
-                print("Negative I_BV")
-            if i_fv < 0:
-                print("Negative I_FV")
+            if i_biv < 0:
+                print("Negative I_BiV")
+            if i_v < 0:
+                print("Negative I_V")
             if i_uv < 0:
                 print("Negative I_UV")
 
             # Force of infection
-            total_infections = max((i_uv + i_fv + i_bv), 1)
+            total_infections = max((i_uv + i_v + i_biv), 1)
 
             # Parameter Values
-            beta = parameters["beta"].value
+            # beta = parameters["beta"].value
             alpha = parameters["alpha"].value
 
-            zeta_uv = parameters["zeta_uv"].value
-            zeta_fv = parameters["zeta_fv"].value
-            zeta_bv = parameters["zeta_bv"].value
-            zeta_ruv = parameters["zeta_ruv"].value
-            zeta_rfv = parameters["zeta_rfv"].value
-            zeta_rbv = parameters["zeta_rbv"].value
+            # Infection Rates:
+            beta_uv = parameters["beta_uv"].value
+            beta_v = parameters["beta_v"].value
+            beta_biv = parameters["beta_biv"].value
+            beta_ruv = parameters["beta_ruv"].value
+            beta_rv = parameters["beta_rv"].value
+            beta_rbiv = parameters["beta_rbiv"].value
 
+            beta_5_17_uv = parameters["beta_5_17_uv"].value
+            beta_5_17_v = parameters["beta_5_17_v"].value
+            beta_5_17_biv = parameters["beta_5_17_biv"].value
+            beta_5_17_ruv = parameters["beta_5_17_ruv"].value
+            beta_5_17_rv = parameters["beta_5_17_rv"].value
+            beta_5_17_rbiv = parameters["beta_5_17_rbiv"].value
+
+            beta_18_49_uv = parameters["beta_18_49_uv"].value
+            beta_18_49_v = parameters["beta_18_49_v"].value
+            beta_18_49_biv = parameters["beta_18_49_biv"].value
+            beta_18_49_ruv = parameters["beta_18_49_ruv"].value
+            beta_18_49_rv = parameters["beta_18_49_rv"].value
+            beta_18_49_rbiv = parameters["beta_18_49_rbiv"].value
+
+            beta_50_64_uv = parameters["beta_50_64_uv"].value
+            beta_50_64_v = parameters["beta_50_64_v"].value
+            beta_50_64_biv = parameters["beta_50_64_biv"].value
+            beta_50_64_ruv = parameters["beta_50_64_ruv"].value
+            beta_50_64_rv = parameters["beta_50_64_rv"].value
+            beta_50_64_rbiv = parameters["beta_50_64_rbiv"].value
+
+            beta_65_plus_uv = parameters["beta_65_plus_uv"].value
+            beta_65_plus_v = parameters["beta_65_plus_v"].value
+            beta_65_plus_biv = parameters["beta_65_plus_biv"].value
+            beta_65_plus_ruv = parameters["beta_65_plus_ruv"].value
+            beta_65_plus_rv = parameters["beta_65_plus_rv"].value
+            beta_65_plus_rbiv = parameters["beta_65_plus_rbiv"].value
+
+            # Hospitalization Rates:
             delta_uv = parameters["delta_uv"].value
-            delta_fv = parameters["delta_fv"].value
-            delta_bv = parameters["delta_bv"].value
+            delta_v = parameters["delta_v"].value
+            delta_biv = parameters["delta_biv"].value
 
+            delta_5_17_uv = parameters["delta_5_17_uv"].value
+            delta_5_17_v = parameters["delta_5_17_v"].value
+            delta_5_17_biv = parameters["delta_5_17_biv"].value
+
+            delta_18_49_uv = parameters["delta_18_49_uv"].value
+            delta_18_49_v = parameters["delta_18_49_v"].value
+            delta_18_49_biv = parameters["delta_18_49_biv"].value
+
+            delta_50_64_uv = parameters["delta_50_64_uv"].value
+            delta_50_64_v = parameters["delta_50_64_v"].value
+            delta_50_64_biv = parameters["delta_50_64_biv"].value
+
+            delta_65_plus_uv = parameters["delta_65_plus_uv"].value
+            delta_65_plus_v = parameters["delta_65_plus_v"].value
+            delta_65_plus_biv = parameters["delta_65_plus_biv"].value
+
+            # Mortality Rates:
             mu_i_uv = parameters["mu_i_uv"].value
-            mu_i_fv = parameters["mu_i_fv"].value
-            mu_i_bv = parameters["mu_i_bv"].value
-
+            mu_i_v = parameters["mu_i_v"].value
+            mu_i_biv = parameters["mu_i_biv"].value
             mu_h_uv = parameters["mu_h_uv"].value
-            mu_h_fv = parameters["mu_h_fv"].value
-            mu_h_bv = parameters["mu_h_bv"].value
+            mu_h_v = parameters["mu_h_v"].value
+            mu_h_biv = parameters["mu_h_biv"].value
 
+            mu_i_5_17_uv = parameters["mu_i_5_17_uv"].value
+            mu_i_5_17_v = parameters["mu_i_5_17_v"].value
+            mu_i_5_17_biv = parameters["mu_i_5_17_biv"].value
+            mu_h_5_17_uv = parameters["mu_h_5_17_uv"].value
+            mu_h_5_17_v = parameters["mu_h_5_17_v"].value
+            mu_h_5_17_biv = parameters["mu_h_5_17_biv"].value
+
+            mu_i_18_49_uv = parameters["mu_i_18_49_uv"].value
+            mu_i_18_49_v = parameters["mu_i_18_49_v"].value
+            mu_i_18_49_biv = parameters["mu_i_18_49_biv"].value
+            mu_h_18_49_uv = parameters["mu_h_18_49_uv"].value
+            mu_h_18_49_v = parameters["mu_h_18_49_v"].value
+            mu_h_18_49_biv = parameters["mu_h_18_49_biv"].value
+
+            mu_i_50_64_uv = parameters["mu_i_50_64_uv"].value
+            mu_i_50_64_v = parameters["mu_i_50_64_v"].value
+            mu_i_50_64_biv = parameters["mu_i_50_64_biv"].value
+            mu_h_50_64_uv = parameters["mu_h_50_64_uv"].value
+            mu_h_50_64_v = parameters["mu_h_50_64_v"].value
+            mu_h_50_64_biv = parameters["mu_h_50_64_biv"].value
+
+            mu_i_65_plus_uv = parameters["mu_i_65_plus_uv"].value
+            mu_i_65_plus_v = parameters["mu_i_65_plus_v"].value
+            mu_i_65_plus_biv = parameters["mu_i_65_plus_biv"].value
+            mu_h_65_plus_uv = parameters["mu_h_65_plus_uv"].value
+            mu_h_65_plus_v = parameters["mu_h_65_plus_v"].value
+            mu_h_65_plus_biv = parameters["mu_h_65_plus_biv"].value
+
+            # Recovery Rates:
             gamma_i_uv = parameters["gamma_i_uv"].value
-            gamma_i_fv = parameters["gamma_i_fv"].value
-            gamma_i_bv = parameters["gamma_i_bv"].value
-
+            gamma_i_v = parameters["gamma_i_v"].value
+            gamma_i_biv = parameters["gamma_i_biv"].value
             gamma_h_uv = parameters["gamma_h_uv"].value
-            gamma_h_fv = parameters["gamma_h_fv"].value
-            gamma_h_bv = parameters["gamma_h_bv"].value
+            gamma_h_v = parameters["gamma_h_v"].value
+            gamma_h_biv = parameters["gamma_h_biv"].value
 
-            exp_to_s_uv = parameters["exp_to_suv"].value
-            exp_to_s_fv = parameters["exp_to_sfv"].value
-            exp_to_s_bv = parameters["exp_to_sbv"].value
-            exp_to_r_uv = parameters["exp_to_ruv"].value
-            exp_to_r_fv = parameters["exp_to_rfv"].value
-            exp_to_r_bv = parameters["exp_to_rbv"].value
+            gamma_i_5_17_uv = parameters["gamma_i_5_17_uv"].value
+            gamma_i_5_17_v = parameters["gamma_i_5_17_v"].value
+            gamma_i_5_17_biv = parameters["gamma_i_5_17_biv"].value
+            gamma_h_5_17_uv = parameters["gamma_h_5_17_uv"].value
+            gamma_h_5_17_v = parameters["gamma_h_5_17_v"].value
+            gamma_h_5_17_biv = parameters["gamma_h_5_17_biv"].value
+
+            gamma_i_18_49_uv = parameters["gamma_i_18_49_uv"].value
+            gamma_i_18_49_v = parameters["gamma_i_18_49_v"].value
+            gamma_i_18_49_biv = parameters["gamma_i_18_49_biv"].value
+            gamma_h_18_49_uv = parameters["gamma_h_18_49_uv"].value
+            gamma_h_18_49_v = parameters["gamma_h_18_49_v"].value
+            gamma_h_18_49_biv = parameters["gamma_h_18_49_biv"].value
+
+            gamma_i_50_64_uv = parameters["gamma_i_50_64_uv"].value
+            gamma_i_50_64_v = parameters["gamma_i_50_64_v"].value
+            gamma_i_50_64_biv = parameters["gamma_i_50_64_biv"].value
+            gamma_h_50_64_uv = parameters["gamma_h_50_64_uv"].value
+            gamma_h_50_64_v = parameters["gamma_h_50_64_v"].value
+            gamma_h_50_64_biv = parameters["gamma_h_50_64_biv"].value
+
+            gamma_i_65_plus_uv = parameters["gamma_i_65_plus_uv"].value
+            gamma_i_65_plus_v = parameters["gamma_i_65_plus_v"].value
+            gamma_i_65_plus_biv = parameters["gamma_i_65_plus_biv"].value
+            gamma_h_65_plus_uv = parameters["gamma_h_65_plus_uv"].value
+            gamma_h_65_plus_v = parameters["gamma_h_65_plus_v"].value
+            gamma_h_65_plus_biv = parameters["gamma_h_65_plus_biv"].value
 
             # Ordinary Differential Equations.
             # beta = beta_s * self.epidemiological_model_data[state]['New Cases'].iloc[
@@ -347,166 +514,636 @@ class EpidemiologicalModelParameterComputer:
 
             # Susceptible
             ds_uv_dt = (
-                -beta * s_uv * (total_infections**alpha) / population
-                + exp_to_s_uv * e_uv
+                -beta_uv * s_uv * (total_infections**alpha) / population
                 - self.epidemiological_model_data[state][
-                    "percentage_unvaccinated_to_fully_vaccinated"
+                    "percentage_unvaccinated_to_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
                 * s_uv
             )
-
-            ds_fv_dt = (
-                -beta * s_fv * (total_infections**alpha) / population
-                + exp_to_s_fv * e_fv
+            ds_v_dt = (
+                -beta_v * s_v * (total_infections**alpha) / population
                 + self.epidemiological_model_data[state][
-                    "percentage_unvaccinated_to_fully_vaccinated"
+                    "percentage_unvaccinated_to_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
                 * s_uv
                 - self.epidemiological_model_data[state][
-                    "percentage_fully_vaccinated_to_boosted"
+                    "percentage_vaccinated_to_bivalent_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * s_fv
+                * s_v
+            )
+            ds_biv_dt = (
+                -beta_biv * s_biv * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_v
             )
 
-            ds_bv_dt = (
-                -beta * s_bv * (total_infections**alpha) / population
-                + exp_to_s_bv * e_bv
-                + self.epidemiological_model_data[state][
-                    "percentage_fully_vaccinated_to_boosted"
+            ds_5_17_uv_dt = (
+                -beta_5_17_uv * s_5_17_uv * (total_infections**alpha) / population
+                - self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * s_fv
+                * s_5_17_uv
+            )
+            ds_5_17_v_dt = (
+                -beta_5_17_v * s_5_17_v * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_5_17_uv
+                - self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_5_17_v
+            )
+            ds_5_17_biv_dt = (
+                -beta_5_17_biv * s_5_17_biv * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_5_17_v
             )
 
-            # Exposed
-            de_uv_dt = (
-                beta * s_uv * (total_infections**alpha) / population
-                + beta * r_uv * (total_infections**alpha) / population
-                - zeta_uv * e_uv
-                - zeta_ruv * e_uv
-                - exp_to_s_uv * e_uv
-                - exp_to_r_uv * e_uv
+            ds_18_49_uv_dt = (
+                -beta_18_49_uv * s_18_49_uv * (total_infections**alpha) / population
                 - self.epidemiological_model_data[state][
-                    "percentage_unvaccinated_to_fully_vaccinated"
+                    "percentage_unvaccinated_to_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * e_uv
+                * s_18_49_uv
             )
-            de_fv_dt = (
-                beta * s_fv * (total_infections**alpha) / population
-                + beta * r_fv * (total_infections**alpha) / population
-                - zeta_fv * e_fv
-                - zeta_rfv * e_fv
-                - exp_to_s_fv * e_fv
-                - exp_to_r_fv * e_fv
+            ds_18_49_v_dt = (
+                -beta_18_49_v * s_18_49_v * (total_infections**alpha) / population
                 + self.epidemiological_model_data[state][
-                    "percentage_unvaccinated_to_fully_vaccinated"
+                    "percentage_unvaccinated_to_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * e_uv
+                * s_18_49_uv
                 - self.epidemiological_model_data[state][
-                    "percentage_fully_vaccinated_to_boosted"
+                    "percentage_vaccinated_to_bivalent_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * e_fv
+                * s_18_49_v
             )
-            de_bv_dt = (
-                beta * s_bv * (total_infections**alpha) / population
-                + beta * r_bv * (total_infections**alpha) / population
-                - zeta_bv * e_bv
-                - zeta_rbv * e_bv
-                - exp_to_s_bv * e_bv
-                - exp_to_r_bv * e_bv
+            ds_18_49_biv_dt = (
+                -beta_18_49_biv * s_18_49_biv * (total_infections**alpha) / population
                 + self.epidemiological_model_data[state][
-                    "percentage_fully_vaccinated_to_boosted"
+                    "percentage_vaccinated_to_bivalent_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * e_fv
+                * s_18_49_v
+            )
+
+            ds_50_64_uv_dt = (
+                -beta_50_64_uv * s_50_64_uv * (total_infections**alpha) / population
+                - self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_50_64_uv
+            )
+            ds_50_64_v_dt = (
+                -beta_50_64_v * s_50_64_v * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_50_64_uv
+                - self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_50_64_v
+            )
+            ds_50_64_biv_dt = (
+                -beta_50_64_biv * s_50_64_biv * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_50_64_v
+            )
+
+            ds_65_plus_uv_dt = (
+                -beta_65_plus_uv
+                * s_65_plus_uv
+                * (total_infections**alpha)
+                / population
+                - self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_65_plus_uv
+            )
+            ds_65_plus_v_dt = (
+                -beta_65_plus_v * s_65_plus_v * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_65_plus_uv
+                - self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_65_plus_v
+            )
+            ds_65_plus_biv_dt = (
+                -beta_65_plus_biv
+                * s_65_plus_biv
+                * (total_infections**alpha)
+                / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * s_65_plus_v
             )
 
             # Infected
             di_uv_dt = (
-                zeta_uv * e_uv
-                + zeta_ruv * e_uv
+                beta_uv * s_uv * (total_infections**alpha) / population
+                + beta_ruv * r_uv * (total_infections**alpha) / population
                 - delta_uv * i_uv
                 - gamma_i_uv * i_uv
                 - mu_i_uv * i_uv
             )
-            di_fv_dt = (
-                zeta_fv * e_fv
-                + zeta_rfv * e_fv
-                - delta_fv * i_fv
-                - gamma_i_fv * i_fv
-                - mu_i_fv * i_fv
+            di_v_dt = (
+                beta_v * s_v * (total_infections**alpha) / population
+                + beta_rv * r_v * (total_infections**alpha) / population
+                - delta_v * i_v
+                - gamma_i_v * i_v
+                - mu_i_v * i_v
             )
-            di_bv_dt = (
-                zeta_bv * e_bv
-                + zeta_rbv * e_bv
-                - delta_bv * i_bv
-                - gamma_i_bv * i_bv
-                - mu_i_bv * i_bv
+            di_biv_dt = (
+                beta_biv * s_biv * (total_infections**alpha) / population
+                + beta_rbiv * r_biv * (total_infections**alpha) / population
+                - delta_biv * i_biv
+                - gamma_i_biv * i_biv
+                - mu_i_biv * i_biv
+            )
+
+            di_5_17_uv_dt = (
+                beta_5_17_uv * s_5_17_uv * (total_infections**alpha) / population
+                + beta_5_17_ruv * r_5_17_uv * (total_infections**alpha) / population
+                - delta_5_17_uv * i_5_17_uv
+                - gamma_i_5_17_uv * i_5_17_uv
+                - mu_i_5_17_uv * i_5_17_uv
+            )
+            di_5_17_v_dt = (
+                beta_5_17_v * s_5_17_v * (total_infections**alpha) / population
+                + beta_5_17_rv * r_5_17_v * (total_infections**alpha) / population
+                - delta_5_17_v * i_5_17_v
+                - gamma_i_5_17_v * i_5_17_v
+                - mu_i_5_17_v * i_5_17_v
+            )
+            di_5_17_biv_dt = (
+                beta_5_17_biv * s_5_17_biv * (total_infections**alpha) / population
+                + beta_5_17_rbiv * r_5_17_biv * (total_infections**alpha) / population
+                - delta_5_17_biv * i_5_17_biv
+                - gamma_i_5_17_biv * i_5_17_biv
+                - mu_i_5_17_biv * i_5_17_biv
+            )
+
+            di_18_49_uv_dt = (
+                beta_18_49_uv * s_18_49_uv * (total_infections**alpha) / population
+                + beta_18_49_ruv * r_18_49_uv * (total_infections**alpha) / population
+                - delta_18_49_uv * i_18_49_uv
+                - gamma_i_18_49_uv * i_18_49_uv
+                - mu_i_18_49_uv * i_18_49_uv
+            )
+            di_18_49_v_dt = (
+                beta_18_49_v * s_18_49_v * (total_infections**alpha) / population
+                + beta_18_49_rv * r_18_49_v * (total_infections**alpha) / population
+                - delta_18_49_v * i_18_49_v
+                - gamma_i_18_49_v * i_18_49_v
+                - mu_i_18_49_v * i_18_49_v
+            )
+            di_18_49_biv_dt = (
+                beta_18_49_biv * s_18_49_biv * (total_infections**alpha) / population
+                + beta_18_49_rbiv
+                * r_18_49_biv
+                * (total_infections**alpha)
+                / population
+                - delta_18_49_biv * i_18_49_biv
+                - gamma_i_18_49_biv * i_18_49_biv
+                - mu_i_18_49_biv * i_18_49_biv
+            )
+
+            di_50_64_uv_dt = (
+                beta_50_64_uv * s_50_64_uv * (total_infections**alpha) / population
+                + beta_50_64_ruv * r_50_64_uv * (total_infections**alpha) / population
+                - delta_50_64_uv * i_50_64_uv
+                - gamma_i_50_64_uv * i_50_64_uv
+                - mu_i_50_64_uv * i_50_64_uv
+            )
+            di_50_64_v_dt = (
+                beta_50_64_v * s_50_64_v * (total_infections**alpha) / population
+                + beta_50_64_rv * r_50_64_v * (total_infections**alpha) / population
+                - delta_50_64_v * i_50_64_v
+                - gamma_i_50_64_v * i_50_64_v
+                - mu_i_50_64_v * i_50_64_v
+            )
+            di_50_64_biv_dt = (
+                beta_50_64_biv * s_50_64_biv * (total_infections**alpha) / population
+                + beta_50_64_rbiv
+                * r_50_64_biv
+                * (total_infections**alpha)
+                / population
+                - delta_50_64_biv * i_50_64_biv
+                - gamma_i_50_64_biv * i_50_64_biv
+                - mu_i_50_64_biv * i_50_64_biv
+            )
+
+            di_65_plus_uv_dt = (
+                beta_65_plus_uv
+                * s_65_plus_uv
+                * (total_infections**alpha)
+                / population
+                + beta_65_plus_ruv
+                * r_65_plus_uv
+                * (total_infections**alpha)
+                / population
+                - delta_65_plus_uv * i_65_plus_uv
+                - gamma_i_65_plus_uv * i_65_plus_uv
+                - mu_i_65_plus_uv * i_65_plus_uv
+            )
+            di_65_plus_v_dt = (
+                beta_65_plus_v * s_65_plus_v * (total_infections**alpha) / population
+                + beta_65_plus_rv
+                * r_65_plus_v
+                * (total_infections**alpha)
+                / population
+                - delta_65_plus_v * i_65_plus_v
+                - gamma_i_65_plus_v * i_65_plus_v
+                - mu_i_65_plus_v * i_65_plus_v
+            )
+            di_65_plus_biv_dt = (
+                beta_65_plus_biv
+                * s_65_plus_biv
+                * (total_infections**alpha)
+                / population
+                + beta_65_plus_rbiv
+                * r_65_plus_biv
+                * (total_infections**alpha)
+                / population
+                - delta_65_plus_biv * i_65_plus_biv
+                - gamma_i_65_plus_biv * i_65_plus_biv
+                - mu_i_65_plus_biv * i_65_plus_biv
             )
 
             # Hospitalized
             dh_uv_dt = delta_uv * i_uv - gamma_h_uv * h_uv - mu_h_uv * h_uv
-            dh_fv_dt = delta_fv * i_fv - gamma_h_fv * h_fv - mu_h_fv * h_fv
-            dh_bv_dt = delta_bv * i_bv - gamma_h_bv * h_bv - mu_h_bv * h_bv
+            dh_v_dt = delta_v * i_v - gamma_h_v * h_v - mu_h_v * h_v
+            dh_biv_dt = delta_biv * i_biv - gamma_h_biv * h_biv - mu_h_biv * h_biv
+
+            dh_5_17_uv_dt = (
+                delta_5_17_uv * i_5_17_uv
+                - gamma_h_5_17_uv * h_5_17_uv
+                - mu_h_5_17_uv * h_5_17_uv
+            )
+            dh_5_17_v_dt = (
+                delta_5_17_v * i_5_17_v
+                - gamma_h_5_17_v * h_5_17_v
+                - mu_h_5_17_v * h_5_17_v
+            )
+            dh_5_17_biv_dt = (
+                delta_5_17_biv * i_5_17_biv
+                - gamma_h_5_17_biv * h_5_17_biv
+                - mu_h_5_17_biv * h_5_17_biv
+            )
+
+            dh_18_49_uv_dt = (
+                delta_18_49_uv * i_18_49_uv
+                - gamma_h_18_49_uv * h_18_49_uv
+                - mu_h_18_49_uv * h_18_49_uv
+            )
+            dh_18_49_v_dt = (
+                delta_18_49_v * i_18_49_v
+                - gamma_h_18_49_v * h_18_49_v
+                - mu_h_18_49_v * h_18_49_v
+            )
+            dh_18_49_biv_dt = (
+                delta_18_49_biv * i_18_49_biv
+                - gamma_h_18_49_biv * h_18_49_biv
+                - mu_h_18_49_biv * h_18_49_biv
+            )
+
+            dh_50_64_uv_dt = (
+                delta_50_64_uv * i_50_64_uv
+                - gamma_h_50_64_uv * h_50_64_uv
+                - mu_h_50_64_uv * h_50_64_uv
+            )
+            dh_50_64_v_dt = (
+                delta_50_64_v * i_50_64_v
+                - gamma_h_50_64_v * h_50_64_v
+                - mu_h_50_64_v * h_50_64_v
+            )
+            dh_50_64_biv_dt = (
+                delta_50_64_biv * i_50_64_biv
+                - gamma_h_50_64_biv * h_50_64_biv
+                - mu_h_50_64_biv * h_50_64_biv
+            )
+
+            dh_65_plus_uv_dt = (
+                delta_65_plus_uv * i_65_plus_uv
+                - gamma_h_65_plus_uv * h_65_plus_uv
+                - mu_h_65_plus_uv * h_65_plus_uv
+            )
+            dh_65_plus_v_dt = (
+                delta_65_plus_v * i_65_plus_v
+                - gamma_h_65_plus_v * h_65_plus_v
+                - mu_h_65_plus_v * h_65_plus_v
+            )
+            dh_65_plus_biv_dt = (
+                delta_65_plus_biv * i_65_plus_biv
+                - gamma_h_65_plus_biv * h_65_plus_biv
+                - mu_h_65_plus_biv * h_65_plus_biv
+            )
 
             # Recovered
             dr_uv_dt = (
                 gamma_i_uv * i_uv
                 + gamma_h_uv * h_uv
-                - beta * r_uv * (total_infections**alpha) / population
-                + exp_to_r_uv * e_uv
+                - beta_ruv * r_uv * (total_infections**alpha) / population
                 - self.epidemiological_model_data[state][
-                    "percentage_unvaccinated_to_fully_vaccinated"
+                    "percentage_unvaccinated_to_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
                 * r_uv
             )
-            dr_fv_dt = (
-                gamma_i_fv * i_fv
-                + gamma_h_fv * h_fv
-                - beta * r_fv * (total_infections**alpha) / population
-                + exp_to_r_fv * e_fv
+            dr_v_dt = (
+                gamma_i_v * i_v
+                + gamma_h_v * h_v
+                - beta_rv * r_v * (total_infections**alpha) / population
                 + self.epidemiological_model_data[state][
-                    "percentage_unvaccinated_to_fully_vaccinated"
+                    "percentage_unvaccinated_to_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
                 * r_uv
                 - self.epidemiological_model_data[state][
-                    "percentage_fully_vaccinated_to_boosted"
+                    "percentage_vaccinated_to_bivalent_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * r_fv
+                * r_v
             )
-            dr_bv_dt = (
-                gamma_i_bv * i_bv
-                + gamma_h_bv * h_bv
-                - beta * r_bv * (total_infections**alpha) / population
-                + exp_to_r_bv * e_bv
+            dr_biv_dt = (
+                gamma_i_biv * i_biv
+                + gamma_h_biv * h_biv
+                - beta_rbiv * r_biv * (total_infections**alpha) / population
                 + self.epidemiological_model_data[state][
-                    "percentage_fully_vaccinated_to_boosted"
+                    "percentage_vaccinated_to_bivalent_vaccinated"
                 ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
-                * r_fv
+                * r_v
             )
 
+            dr_5_17_uv_dt = (
+                gamma_i_5_17_uv * i_5_17_uv
+                + gamma_h_5_17_uv * h_5_17_uv
+                - beta_5_17_ruv * r_5_17_uv * (total_infections**alpha) / population
+                - self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_5_17_uv
+            )
+            dr_5_17_v_dt = (
+                gamma_i_5_17_v * i_5_17_v
+                + gamma_h_5_17_v * h_5_17_v
+                - beta_5_17_rv * r_5_17_v * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_5_17_uv
+                - self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_5_17_v
+            )
+            dr_5_17_biv_dt = (
+                gamma_i_5_17_biv * i_5_17_biv
+                + gamma_h_5_17_biv * h_5_17_biv
+                - beta_5_17_rbiv * r_5_17_biv * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_5_17_v
+            )
+
+            dr_18_49_uv_dt = (
+                gamma_i_18_49_uv * i_18_49_uv
+                + gamma_h_18_49_uv * h_18_49_uv
+                - beta_18_49_ruv * r_18_49_uv * (total_infections**alpha) / population
+                - self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_18_49_uv
+            )
+            dr_18_49_v_dt = (
+                gamma_i_18_49_v * i_18_49_v
+                + gamma_h_18_49_v * h_18_49_v
+                - beta_18_49_rv * r_18_49_v * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_18_49_uv
+                - self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_18_49_v
+            )
+            dr_18_49_biv_dt = (
+                gamma_i_18_49_biv * i_18_49_biv
+                + gamma_h_18_49_biv * h_18_49_biv
+                - beta_18_49_rbiv
+                * r_18_49_biv
+                * (total_infections**alpha)
+                / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_18_49_v
+            )
+
+            dr_50_64_uv_dt = (
+                gamma_i_50_64_uv * i_50_64_uv
+                + gamma_h_50_64_uv * h_50_64_uv
+                - beta_50_64_ruv * r_50_64_uv * (total_infections**alpha) / population
+                - self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_50_64_uv
+            )
+            dr_50_64_v_dt = (
+                gamma_i_50_64_v * i_50_64_v
+                + gamma_h_50_64_v * h_50_64_v
+                - beta_50_64_rv * r_50_64_v * (total_infections**alpha) / population
+                + self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_50_64_uv
+                - self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_50_64_v
+            )
+            dr_50_64_biv_dt = (
+                gamma_i_50_64_biv * i_50_64_biv
+                + gamma_h_50_64_biv * h_50_64_biv
+                - beta_50_64_rbiv
+                * r_50_64_biv
+                * (total_infections**alpha)
+                / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_50_64_v
+            )
+
+            dr_65_plus_uv_dt = (
+                gamma_i_65_plus_uv * i_65_plus_uv
+                + gamma_h_65_plus_uv * h_65_plus_uv
+                - beta_65_plus_ruv
+                * r_65_plus_uv
+                * (total_infections**alpha)
+                / population
+                - self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_65_plus_uv
+            )
+            dr_65_plus_v_dt = (
+                gamma_i_65_plus_v * i_65_plus_v
+                + gamma_h_65_plus_v * h_65_plus_v
+                - beta_65_plus_rv
+                * r_65_plus_v
+                * (total_infections**alpha)
+                / population
+                + self.epidemiological_model_data[state][
+                    "percentage_unvaccinated_to_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_65_plus_uv
+                - self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_65_plus_v
+            )
+            dr_65_plus_biv_dt = (
+                gamma_i_65_plus_biv * i_65_plus_biv
+                + gamma_h_65_plus_biv * h_65_plus_biv
+                - beta_65_plus_rbiv
+                * r_65_plus_biv
+                * (total_infections**alpha)
+                / population
+                + self.epidemiological_model_data[state][
+                    "percentage_vaccinated_to_bivalent_vaccinated"
+                ].iloc[min(int(t), len(self.epidemiological_model_data[state]) - 1)]
+                * r_65_plus_v
+            )
             # Deceased
-            dd_uv_dt = mu_i_uv * i_uv + mu_h_uv * h_uv
-            dd_fv_dt = mu_i_fv * i_fv + mu_h_fv * h_fv
-            dd_bv_dt = mu_i_bv * i_bv + mu_h_bv * h_bv
+            ddec_uv_dt = mu_i_uv * i_uv + mu_h_uv * h_uv
+            ddec_v_dt = mu_i_v * i_v + mu_h_v * h_v
+            ddec_biv_dt = mu_i_biv * i_biv + mu_h_biv * h_biv
+
+            ddec_5_17_uv_dt = mu_i_5_17_uv * i_5_17_uv + mu_h_5_17_uv * h_5_17_uv
+            ddec_5_17_v_dt = mu_i_5_17_v * i_5_17_v + mu_h_5_17_v * h_5_17_v
+            ddec_5_17_biv_dt = mu_i_5_17_biv * i_5_17_biv + mu_h_5_17_biv * h_5_17_biv
+
+            ddec_18_49_uv_dt = mu_i_18_49_uv * i_18_49_uv + mu_h_18_49_uv * h_18_49_uv
+            ddec_18_49_v_dt = mu_i_18_49_v * i_18_49_v + mu_h_18_49_v * h_18_49_v
+            ddec_18_49_biv_dt = (
+                mu_i_18_49_biv * i_18_49_biv + mu_h_18_49_biv * h_18_49_biv
+            )
+
+            ddec_50_64_uv_dt = mu_i_50_64_uv * i_50_64_uv + mu_h_50_64_uv * h_50_64_uv
+            ddec_50_64_v_dt = mu_i_50_64_v * i_50_64_v + mu_h_50_64_v * h_50_64_v
+            ddec_50_64_biv_dt = (
+                mu_i_50_64_biv * i_50_64_biv + mu_h_50_64_biv * h_50_64_biv
+            )
+
+            ddec_65_plus_uv_dt = (
+                mu_i_65_plus_uv * i_65_plus_uv + mu_h_65_plus_uv * h_65_plus_uv
+            )
+            ddec_65_plus_v_dt = (
+                mu_i_65_plus_v * i_65_plus_v + mu_h_65_plus_v * h_65_plus_v
+            )
+            ddec_65_plus_biv_dt = (
+                mu_i_65_plus_biv * i_65_plus_biv + mu_h_65_plus_biv * h_65_plus_biv
+            )
 
             return (
                 ds_uv_dt,
-                ds_fv_dt,
-                ds_bv_dt,
-                de_uv_dt,
-                de_fv_dt,
-                de_bv_dt,
+                ds_v_dt,
+                ds_biv_dt,
                 di_uv_dt,
-                di_fv_dt,
-                di_bv_dt,
+                di_v_dt,
+                di_biv_dt,
                 dh_uv_dt,
-                dh_fv_dt,
-                dh_bv_dt,
+                dh_v_dt,
+                dh_biv_dt,
                 dr_uv_dt,
-                dr_fv_dt,
-                dr_bv_dt,
-                dd_uv_dt,
-                dd_fv_dt,
-                dd_bv_dt,
+                dr_v_dt,
+                dr_biv_dt,
+                ddec_uv_dt,
+                ddec_v_dt,
+                ddec_biv_dt,
+                ds_5_17_uv_dt,
+                ds_5_17_v_dt,
+                ds_5_17_biv_dt,
+                ds_18_49_uv_dt,
+                ds_18_49_v_dt,
+                ds_18_49_biv_dt,
+                ds_50_64_uv_dt,
+                ds_50_64_v_dt,
+                ds_50_64_biv_dt,
+                ds_65_plus_uv_dt,
+                ds_65_plus_v_dt,
+                ds_65_plus_biv_dt,
+                di_5_17_uv_dt,
+                di_5_17_v_dt,
+                di_5_17_biv_dt,
+                di_18_49_uv_dt,
+                di_18_49_v_dt,
+                di_18_49_biv_dt,
+                di_50_64_uv_dt,
+                di_50_64_v_dt,
+                di_50_64_biv_dt,
+                di_65_plus_uv_dt,
+                di_65_plus_v_dt,
+                di_65_plus_biv_dt,
+                dh_5_17_uv_dt,
+                dh_5_17_v_dt,
+                dh_5_17_biv_dt,
+                dh_18_49_uv_dt,
+                dh_18_49_v_dt,
+                dh_18_49_biv_dt,
+                dh_50_64_uv_dt,
+                dh_50_64_v_dt,
+                dh_50_64_biv_dt,
+                dh_65_plus_uv_dt,
+                dh_65_plus_v_dt,
+                dh_65_plus_biv_dt,
+                dr_5_17_uv_dt,
+                dr_5_17_v_dt,
+                dr_5_17_biv_dt,
+                dr_18_49_uv_dt,
+                dr_18_49_v_dt,
+                dr_18_49_biv_dt,
+                dr_50_64_uv_dt,
+                dr_50_64_v_dt,
+                dr_50_64_biv_dt,
+                dr_65_plus_uv_dt,
+                dr_65_plus_v_dt,
+                dr_65_plus_biv_dt,
+                ddec_5_17_uv_dt,
+                ddec_5_17_v_dt,
+                ddec_5_17_biv_dt,
+                ddec_18_49_uv_dt,
+                ddec_18_49_v_dt,
+                ddec_18_49_biv_dt,
+                ddec_50_64_uv_dt,
+                ddec_50_64_v_dt,
+                ddec_50_64_biv_dt,
+                ddec_65_plus_uv_dt,
+                ddec_65_plus_v_dt,
+                ddec_65_plus_biv_dt,
+                # ddet_5_17_uv_dt,
+                # ddet_5_17_v_dt,
+                # ddet_5_17_biv_dt,
+                # ddet_18_49_uv_dt,
+                # ddet_18_49_v_dt,
+                # ddet_18_49_biv_dt,
+                # ddet_50_64_uv_dt,
+                # ddet_50_64_v_dt,
+                # ddet_50_64_biv_dt,
+                # ddet_65_plus_uv_dt,
+                # ddet_65_plus_v_dt,
+                # ddet_65_plus_biv_dt,
             )
 
     def ode_solver(
@@ -709,7 +1346,7 @@ compartments = [
     "Hospitalized",
     "Recovered",
     "Deceased",
-    "Detected",
+    # "Detected",
 ]
 
 for compartment in compartments:
@@ -739,5 +1376,4 @@ epidemiological_model_parameter_computer_configuration = {
 epidemiological_model_parameter_computer = EpidemiologicalModelParameterComputer(
     parameter_computer_configuration=epidemiological_model_parameter_computer_configuration
 )
-
-# epidemiological_model_parameter_computer.compute_epidemiological_model_parameters()
+epidemiological_model_parameter_computer.compute_epidemiological_model_parameters()

@@ -459,63 +459,194 @@ class ParameterInitializer:
         # Set parameters including bounds
         parameters = Parameters()
 
-        # Exposure rate.
-        if constrained_beta:
-            parameters.add("beta", value=3, min=0.0, max=10)
-        else:
-            parameters.add("beta", value=3, min=1.5, max=5)
+        # # Exposure rate.
+        # if constrained_beta:
+        #     parameters.add("beta", value=3, min=0.0, max=10)
+        # else:
+        #     parameters.add("beta", value=3, min=1.5, max=5)
 
         # Population mixing coefficient.
         parameters.add("alpha", value=0.85, min=0.7, max=1)
 
-        # Infection rates for exposed individuals.
-        parameters.add("zeta_uv", value=0.02, min=0, max=0.05)
-        parameters.add("zeta_fv", value=0.003, min=0, max=0.007)
-        parameters.add("zeta_bv", value=0.0003, min=0, max=0.007)
+        # Infection rates.
+        # parameters.add("beta_uv", value=0.02, min=0, max=0.05)
+        # parameters.add("beta_v", value=0.003, min=0, max=0.007)
+        # parameters.add("beta_biv", value=0.0003, min=0, max=0.007)
+        parameters.add("beta_uv", value=0.02, min=0, max=10)
+        parameters.add("beta_v", value=0.003, min=0, max=10)
+        parameters.add("beta_biv", value=0.0003, min=0, max=10)
+        parameters.add("beta_ruv", value=0.007, min=0, max=10)
+        parameters.add("beta_rv", value=0.004, min=0, max=10)
+        parameters.add("beta_rbiv", value=0.004, min=0, max=10)
+
+        parameters.add("beta_5_17_uv", value=0.02, min=0, max=10)
+        parameters.add("beta_5_17_v", value=0.003, min=0, max=10)
+        parameters.add("beta_5_17_biv", value=0.0003, min=0, max=10)
+        parameters.add("beta_5_17_ruv", value=0.007, min=0, max=10)
+        parameters.add("beta_5_17_rv", value=0.004, min=0, max=10)
+        parameters.add("beta_5_17_rbiv", value=0.004, min=0, max=10)
+
+        parameters.add("beta_18_49_uv", value=0.02, min=0, max=10)
+        parameters.add("beta_18_49_v", value=0.003, min=0, max=10)
+        parameters.add("beta_18_49_biv", value=0.0003, min=0, max=10)
+        parameters.add("beta_18_49_ruv", value=0.007, min=0, max=10)
+        parameters.add("beta_18_49_rv", value=0.004, min=0, max=10)
+        parameters.add("beta_18_49_rbiv", value=0.004, min=0, max=10)
+
+        parameters.add("beta_50_64_uv", value=0.02, min=0, max=10)
+        parameters.add("beta_50_64_v", value=0.003, min=0, max=10)
+        parameters.add("beta_50_64_biv", value=0.0003, min=0, max=10)
+        parameters.add("beta_50_64_ruv", value=0.007, min=0, max=10)
+        parameters.add("beta_50_64_rv", value=0.004, min=0, max=10)
+        parameters.add("beta_50_64_rbiv", value=0.004, min=0, max=10)
+
+        parameters.add("beta_65_plus_uv", value=0.02, min=0, max=10)
+        parameters.add("beta_65_plus_v", value=0.003, min=0, max=10)
+        parameters.add("beta_65_plus_biv", value=0.0003, min=0, max=10)
+        parameters.add("beta_65_plus_ruv", value=0.007, min=0, max=10)
+        parameters.add("beta_65_plus_rv", value=0.004, min=0, max=10)
+        parameters.add("beta_65_plus_rbiv", value=0.004, min=0, max=10)
 
         # Hospitalization rates for infected individuals.
         parameters.add("delta_uv", value=0.00216666, min=0.0, max=0.00444444)
-        parameters.add("delta_fv", value=0.000516666, min=0.0, max=0.00444444)
-        parameters.add("delta_bv", value=0.000516666, min=0.0, max=0.00444444)
+        parameters.add("delta_v", value=0.000516666, min=0.0, max=0.00444444)
+        parameters.add("delta_biv", value=0.000516666, min=0.0, max=0.00444444)
+
+        parameters.add("delta_5_17_uv", value=0.00216666, min=0.0, max=0.00444444)
+        parameters.add("delta_5_17_v", value=0.000516666, min=0.0, max=0.00444444)
+        parameters.add("delta_5_17_biv", value=0.000516666, min=0.0, max=0.00444444)
+
+        parameters.add("delta_18_49_uv", value=0.00216666, min=0.0, max=0.00444444)
+        parameters.add("delta_18_49_v", value=0.000516666, min=0.0, max=0.00444444)
+        parameters.add("delta_18_49_biv", value=0.000516666, min=0.0, max=0.00444444)
+
+        parameters.add("delta_50_64_uv", value=0.00216666, min=0.0, max=0.00444444)
+        parameters.add("delta_50_64_v", value=0.000516666, min=0.0, max=0.00444444)
+        parameters.add("delta_50_64_biv", value=0.000516666, min=0.0, max=0.00444444)
+
+        parameters.add("delta_65_plus_uv", value=0.00216666, min=0.0, max=0.00444444)
+        parameters.add("delta_65_plus_v", value=0.000516666, min=0.0, max=0.00444444)
+        parameters.add("delta_65_plus_biv", value=0.000516666, min=0.0, max=0.00444444)
 
         # Recovery rates for infected individuals.
         parameters.add("gamma_i_uv", value=0.05, min=0.040, max=0.055)
-        parameters.add("gamma_i_fv", value=0.053, min=0.045, max=0.055)
-        parameters.add("gamma_i_bv", value=0.053, min=0.0475, max=0.065)
-
-        # Recovery rates for hospitalized individuals.
+        parameters.add("gamma_i_v", value=0.053, min=0.045, max=0.055)
+        parameters.add("gamma_i_biv", value=0.053, min=0.0475, max=0.065)
         parameters.add("gamma_h_uv", value=0.0277777, min=0.025, max=0.055)
-        parameters.add("gamma_h_fv", value=0.0377777, min=0.03, max=0.055)
-        parameters.add("gamma_h_bv", value=0.0377777, min=0.03, max=0.065)
+        parameters.add("gamma_h_v", value=0.0377777, min=0.03, max=0.055)
+        parameters.add("gamma_h_biv", value=0.0377777, min=0.03, max=0.065)
+
+        parameters.add("gamma_i_5_17_uv", value=0.05, min=0.040, max=0.055)
+        parameters.add("gamma_i_5_17_v", value=0.053, min=0.045, max=0.055)
+        parameters.add("gamma_i_5_17_biv", value=0.053, min=0.0475, max=0.065)
+        parameters.add("gamma_h_5_17_uv", value=0.0277777, min=0.025, max=0.055)
+        parameters.add("gamma_h_5_17_v", value=0.0377777, min=0.03, max=0.055)
+        parameters.add("gamma_h_5_17_biv", value=0.0377777, min=0.03, max=0.065)
+
+        parameters.add("gamma_i_18_49_uv", value=0.05, min=0.040, max=0.055)
+        parameters.add("gamma_i_18_49_v", value=0.053, min=0.045, max=0.055)
+        parameters.add("gamma_i_18_49_biv", value=0.053, min=0.0475, max=0.065)
+        parameters.add("gamma_h_18_49_uv", value=0.0277777, min=0.025, max=0.055)
+        parameters.add("gamma_h_18_49_v", value=0.0377777, min=0.03, max=0.055)
+        parameters.add("gamma_h_18_49_biv", value=0.0377777, min=0.03, max=0.065)
+
+        parameters.add("gamma_i_50_64_uv", value=0.05, min=0.040, max=0.055)
+        parameters.add("gamma_i_50_64_v", value=0.053, min=0.045, max=0.055)
+        parameters.add("gamma_i_50_64_biv", value=0.053, min=0.0475, max=0.065)
+        parameters.add("gamma_h_50_64_uv", value=0.0277777, min=0.025, max=0.055)
+        parameters.add("gamma_h_50_64_v", value=0.0377777, min=0.03, max=0.055)
+        parameters.add("gamma_h_50_64_biv", value=0.0377777, min=0.03, max=0.065)
+
+        parameters.add("gamma_i_65_plus_uv", value=0.05, min=0.040, max=0.055)
+        parameters.add("gamma_i_65_plus_v", value=0.053, min=0.045, max=0.055)
+        parameters.add("gamma_i_65_plus_biv", value=0.053, min=0.0475, max=0.065)
+        parameters.add("gamma_h_65_plus_uv", value=0.0277777, min=0.025, max=0.055)
+        parameters.add("gamma_h_65_plus_v", value=0.0377777, min=0.03, max=0.055)
+        parameters.add("gamma_h_65_plus_biv", value=0.0377777, min=0.03, max=0.065)
 
         # Death rates for infected individuals.
         parameters.add(
             "mu_i_uv", value=0.00155555555, min=0.00005555555, max=0.0033333333
         )
         parameters.add(
-            "mu_i_fv", value=0.000005555555, min=0.000005555555, max=0.0033333333
+            "mu_i_v", value=0.000005555555, min=0.000005555555, max=0.0033333333
         )
         parameters.add(
-            "mu_i_bv", value=0.000005555555, min=0.000002555555, max=0.0033333333
+            "mu_i_biv", value=0.000005555555, min=0.000002555555, max=0.0033333333
+        )
+        parameters.add("mu_h_uv", value=0.00877777, min=0.00277777, max=0.01388888)
+        parameters.add("mu_h_v", value=0.00277777, min=0.00077777, max=0.01388888)
+        parameters.add("mu_h_biv", value=0.00087777, min=0.000177777, max=0.01388888)
+
+        parameters.add(
+            "mu_i_5_17_uv", value=0.00155555555, min=0.00005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_5_17_v", value=0.000005555555, min=0.000005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_5_17_biv", value=0.000005555555, min=0.000002555555, max=0.0033333333
+        )
+        parameters.add("mu_h_5_17_uv", value=0.00877777, min=0.00277777, max=0.01388888)
+        parameters.add("mu_h_5_17_v", value=0.00277777, min=0.00077777, max=0.01388888)
+        parameters.add(
+            "mu_h_5_17_biv", value=0.00087777, min=0.000177777, max=0.01388888
         )
 
-        # Death rates for hospitalized individuals.
-        parameters.add("mu_h_uv", value=0.00877777, min=0.00277777, max=0.01388888)
-        parameters.add("mu_h_fv", value=0.00277777, min=0.00077777, max=0.01388888)
-        parameters.add("mu_h_bv", value=0.00087777, min=0.000177777, max=0.01388888)
+        parameters.add(
+            "mu_i_18_49_uv", value=0.00155555555, min=0.00005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_18_49_v", value=0.000005555555, min=0.000005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_18_49_biv", value=0.000005555555, min=0.000002555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_h_18_49_uv", value=0.00877777, min=0.00277777, max=0.01388888
+        )
+        parameters.add("mu_h_18_49_v", value=0.00277777, min=0.00077777, max=0.01388888)
+        parameters.add(
+            "mu_h_18_49_biv", value=0.00087777, min=0.000177777, max=0.01388888
+        )
 
-        # Rate at which previously exposed individuals become susceptible again.
-        parameters.add("exp_to_suv", value=0.25, min=0.0, max=1)
-        parameters.add("exp_to_sfv", value=0.5, min=0.0, max=1)
-        parameters.add("exp_to_sbv", value=0.5, min=0.0, max=1)
+        parameters.add(
+            "mu_i_50_64_uv", value=0.00155555555, min=0.00005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_50_64_v", value=0.000005555555, min=0.000005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_50_64_biv", value=0.000005555555, min=0.000002555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_h_50_64_uv", value=0.00877777, min=0.00277777, max=0.01388888
+        )
+        parameters.add("mu_h_50_64_v", value=0.00277777, min=0.00077777, max=0.01388888)
+        parameters.add(
+            "mu_h_50_64_biv", value=0.00087777, min=0.000177777, max=0.01388888
+        )
 
-        # Parameters to allow recovered individuals to get reinfected
-        parameters.add("zeta_ruv", value=0.007, min=0, max=0.05)
-        parameters.add("zeta_rfv", value=0.004, min=0, max=0.007)
-        parameters.add("zeta_rbv", value=0.004, min=0, max=0.007)
-
-        parameters.add("exp_to_ruv", value=0.25, min=0.0, max=1)
-        parameters.add("exp_to_rfv", value=0.5, min=0.0, max=1)
-        parameters.add("exp_to_rbv", value=0.5, min=0.0, max=1)
+        parameters.add(
+            "mu_i_65_plus_uv", value=0.00155555555, min=0.00005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_65_plus_v", value=0.000005555555, min=0.000005555555, max=0.0033333333
+        )
+        parameters.add(
+            "mu_i_65_plus_biv",
+            value=0.000005555555,
+            min=0.000002555555,
+            max=0.0033333333,
+        )
+        parameters.add(
+            "mu_h_65_plus_uv", value=0.00877777, min=0.00277777, max=0.01388888
+        )
+        parameters.add(
+            "mu_h_65_plus_v", value=0.00277777, min=0.00077777, max=0.01388888
+        )
+        parameters.add(
+            "mu_h_65_plus_biv", value=0.00087777, min=0.000177777, max=0.01388888
+        )
 
         return parameters
