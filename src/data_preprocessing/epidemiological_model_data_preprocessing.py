@@ -182,23 +182,23 @@ class EpidemiologicalDataPreProcessing:
                         0 if (uv + v + biv) == 0 else biv / (uv + v + biv)
                     )
 
-        # print(
-        #     "Cases by Age and Vaccination First:\n",
-        #     self.cases_by_age_vaccination.head(),
-        # )
-        # print(
-        #     "\n\nCases by Age and Vaccination Last:\n",
-        #     self.cases_by_age_vaccination.iloc[-5:],
-        # )
-        #
-        # print(
-        #     "\n\nDeaths by Age and Vaccination First:\n",
-        #     self.deaths_by_age_vaccination.head(),
-        # )
-        # print(
-        #     "\n\nDeaths by Age and Vaccination Last:\n",
-        #     self.deaths_by_age_vaccination.iloc[-5:],
-        # )
+        print(
+            "Cases by Age and Vaccination First:\n",
+            self.cases_by_age_vaccination.head(),
+        )
+        print(
+            "\n\nCases by Age and Vaccination Last:\n",
+            self.cases_by_age_vaccination.iloc[-5:],
+        )
+
+        print(
+            "\n\nDeaths by Age and Vaccination First:\n",
+            self.deaths_by_age_vaccination.head(),
+        )
+        print(
+            "\n\nDeaths by Age and Vaccination Last:\n",
+            self.deaths_by_age_vaccination.iloc[-5:],
+        )
 
         # Hospitalization Data
         self.hospitalizations_by_age_vaccination[
@@ -262,14 +262,14 @@ class EpidemiologicalDataPreProcessing:
                     f"{age_group}_BiV_Multiplier"
                 ].iloc[i] = biv
 
-        # print(
-        #     "\n\nHospitalizations by Age and Vaccination First:\n",
-        #     self.hospitalizations_by_age_vaccination.head(),
-        # )
-        # print(
-        #     "\n\nHospitalizations by Age and Vaccination Last:\n",
-        #     self.hospitalizations_by_age_vaccination.iloc[-5:],
-        # )
+        print(
+            "\n\nHospitalizations by Age and Vaccination First:\n",
+            self.hospitalizations_by_age_vaccination.head(),
+        )
+        print(
+            "\n\nHospitalizations by Age and Vaccination Last:\n",
+            self.hospitalizations_by_age_vaccination.iloc[-5:],
+        )
 
     def data_preprocessing(self):
         """This method pre-processes the data for the sub-compartments in the epidemiological model."""
@@ -290,31 +290,68 @@ class EpidemiologicalDataPreProcessing:
             # print(self.epidemiological_data[state].iloc[-5:])
 
             # Vaccination compartments.
-            self.epidemiological_data[state]["unvaccinated_individuals"] = (
-                self.state_populations[state]
-                - self.epidemiological_data[state]["Administered_Dose1_Recip"]
-            )
+            # self.epidemiological_data[state]["unvaccinated_individuals"] = (
+            #     self.state_populations[state]
+            #     - self.epidemiological_data[state]["Administered_Dose1_Recip"]
+            # )
+            # self.epidemiological_data[state]["unvaccinated_individuals"] = (
+            #     self.state_populations[state]
+            #     - self.epidemiological_data[state]["Series_Complete_Yes"]
+            # )
 
             self.epidemiological_data[state][
                 "primary_series_vaccinated_individuals"
-            ] = self.epidemiological_data[state]["Series_Complete_Yes"]
+            ] = (
+                self.epidemiological_data[state]["Series_Complete_Yes"]
+                - self.epidemiological_data[state]["Additional_Doses"]
+                # - self.epidemiological_data[state]["Second_Booster"]
+                # - self.epidemiological_data[state]["Administered_Bivalent"]
+            )
 
-            self.epidemiological_data[state][
-                "first_booster_vaccinated_individuals"
-            ] = self.epidemiological_data[state]["Additional_Doses"]
+            self.epidemiological_data[state]["first_booster_vaccinated_individuals"] = (
+                self.epidemiological_data[state]["Additional_Doses"]
+                - self.epidemiological_data[state]["Second_Booster_50Plus"]
+                - self.epidemiological_data[state]["Administered_Bivalent"]
+            )
 
             self.epidemiological_data[state][
                 "second_booster_vaccinated_individuals"
-            ] = self.epidemiological_data[state]["Second_Booster"]
+            ] = (
+                self.epidemiological_data[state]["Second_Booster_50Plus"]
+                # - self.epidemiological_data[state]["Administered_Bivalent"]
+            )
 
             self.epidemiological_data[state]["vaccinated_individuals"] = (
-                self.epidemiological_data[state]["Series_Complete_Yes"]
-                + self.epidemiological_data[state]["Additional_Doses"]
-                + self.epidemiological_data[state]["Second_Booster"]
+                self.epidemiological_data[state][
+                    "primary_series_vaccinated_individuals"
+                ]
+                + self.epidemiological_data[state][
+                    "first_booster_vaccinated_individuals"
+                ]
+                + self.epidemiological_data[state][
+                    "second_booster_vaccinated_individuals"
+                ]
             )
+
             self.epidemiological_data[state][
                 "bivalent_booster_vaccinated_individuals"
             ] = self.epidemiological_data[state]["Administered_Bivalent"]
+
+            self.epidemiological_data[state]["unvaccinated_individuals"] = (
+                self.state_populations[state]
+                - self.epidemiological_data[state][
+                    "primary_series_vaccinated_individuals"
+                ]
+                - self.epidemiological_data[state][
+                    "first_booster_vaccinated_individuals"
+                ]
+                - self.epidemiological_data[state][
+                    "second_booster_vaccinated_individuals"
+                ]
+                - self.epidemiological_data[state][
+                    "bivalent_booster_vaccinated_individuals"
+                ]
+            )
 
             # Computing the vaccination rates.
             self.epidemiological_data[state][
@@ -361,18 +398,18 @@ class EpidemiologicalDataPreProcessing:
                     i - 1
                 ]
 
-            # Exposed compartments.
-            exposure_multiplier = (
-                100 / 0.7
-            )  # We have a reference for this. (Cited > 700 times).
-            self.epidemiological_data[state]["Exposed"] = (
-                self.epidemiological_data[state]["Daily Cases"] * exposure_multiplier
-            ).astype(int)
+            # # Exposed compartments.
+            # exposure_multiplier = (
+            #     100 / 0.7
+            # )  # We have a reference for this. (Cited > 700 times).
+            # self.epidemiological_data[state]["Exposed"] = (
+            #     self.epidemiological_data[state]["Daily Cases"] * exposure_multiplier
+            # ).astype(int)
 
             # Susceptible compartments.
             self.epidemiological_data[state]["Susceptible"] = (
                 self.state_populations[state]
-                - self.epidemiological_data[state]["Exposed"]
+                # - self.epidemiological_data[state]["Exposed"]
                 - self.epidemiological_data[state]["Active Cases"]
                 - self.epidemiological_data[state]["Total Recovered"]
                 - self.epidemiological_data[state]["Total Deaths (Linear)"]
@@ -411,12 +448,18 @@ class EpidemiologicalDataPreProcessing:
                     self.epidemiological_data[state][
                         f"Infected_{age_group}_{vaccination_group}"
                     ] = (
-                        self.epidemiological_data[state][
-                            f"Infected_{vaccination_group}"
-                        ]
+                        (
+                            self.epidemiological_data[state]["Active Cases"]
+                            - self.epidemiological_data[state][
+                                "inpatient_beds_used_covid"
+                            ]
+                        )
+                        * (self.cases_by_age_vaccination[f"{age_group}_Multiplier"])
                         * self.cases_by_age_vaccination[
                             f"{age_group}_{vaccination_group}_Multiplier"
                         ]
+                    ).astype(
+                        int
                     )
 
             # Hospitalized compartments.
@@ -438,7 +481,21 @@ class EpidemiologicalDataPreProcessing:
             ).astype(int)
             self.epidemiological_data[state]["Hospitalized_BiV"] = cdc_skew
 
+            for vaccination_group in vaccination_groups:
+                for age_group in age_groups:
+                    self.epidemiological_data[state][
+                        f"Hospitalized_{age_group}_{vaccination_group}"
+                    ] = (
+                        self.epidemiological_data[state]["inpatient_beds_used_covid"]
+                        * self.hospitalizations_by_age_vaccination[
+                            f"{age_group}_{vaccination_group}_Multiplier"
+                        ]
+                    ).astype(
+                        int
+                    )
+
             # Recovered compartments.
+            # Computing the recoveries by vaccination groups.
             initial_recovered_unvaccinated_skew = (
                 self.epidemiological_data[state]["Total Recovered"].iloc[0]
                 * self.cases_by_age_vaccination["UV_Multiplier"].iloc[0]
@@ -454,6 +511,25 @@ class EpidemiologicalDataPreProcessing:
                 * self.cases_by_age_vaccination["BiV_Multiplier"].iloc[0]
             ).astype(int)
 
+            # Computing the recoveries by age groups.
+            initial_recovered_5_17_skew = (
+                self.epidemiological_data[state]["Total Recovered"].iloc[0]
+                * self.cases_by_age_vaccination["5-17_Multiplier"].iloc[0]
+            ).astype(int)
+
+            initial_recovered_18_49_skew = (
+                self.epidemiological_data[state]["Total Recovered"].iloc[0]
+                * self.cases_by_age_vaccination["18-49_Multiplier"].iloc[0]
+            ).astype(int)
+            initial_recovered_50_64_skew = (
+                self.epidemiological_data[state]["Total Recovered"].iloc[0]
+                * self.cases_by_age_vaccination["50-64_Multiplier"].iloc[0]
+            ).astype(int)
+            initial_recovered_65_plus_skew = (
+                self.epidemiological_data[state]["Total Recovered"].iloc[0]
+                * self.cases_by_age_vaccination["65+_Multiplier"].iloc[0]
+            ).astype(int)
+
             uv_to_v = self.epidemiological_data[state][
                 "percentage_unvaccinated_to_vaccinated"
             ]
@@ -462,8 +538,17 @@ class EpidemiologicalDataPreProcessing:
             ]
 
             self.epidemiological_data[state][
-                ["Recovered_UV", "Recovered_V", "Recovered_BiV"]
+                [
+                    "Recovered_UV",
+                    "Recovered_V",
+                    "Recovered_BiV",
+                    "Recovered_5-17",
+                    "Recovered_18-49",
+                    "Recovered_50-64",
+                    "Recovered_65+",
+                ]
             ] = 0
+
             self.epidemiological_data[state]["Recovered_UV"].iloc[
                 0
             ] = initial_recovered_unvaccinated_skew
@@ -474,7 +559,21 @@ class EpidemiologicalDataPreProcessing:
                 0
             ] = initial_recovered_booster_vaccinated_skew
 
+            self.epidemiological_data[state]["Recovered_5-17"].iloc[
+                0
+            ] = initial_recovered_5_17_skew
+            self.epidemiological_data[state]["Recovered_18-49"].iloc[
+                0
+            ] = initial_recovered_18_49_skew
+            self.epidemiological_data[state]["Recovered_50-64"].iloc[
+                0
+            ] = initial_recovered_50_64_skew
+            self.epidemiological_data[state]["Recovered_65+"].iloc[
+                0
+            ] = initial_recovered_65_plus_skew
+
             for i in range(1, len(self.epidemiological_data[state])):
+                # Computing the Recovered compartments by vaccination groups.
                 self.epidemiological_data[state]["Recovered_UV"].iloc[i] = (
                     self.epidemiological_data[state]["Recovered_UV"].iloc[i - 1]
                     + self.epidemiological_data[state]["New Recoveries"].iloc[i]
@@ -499,7 +598,46 @@ class EpidemiologicalDataPreProcessing:
                     * self.epidemiological_data[state]["Recovered_V"].iloc[i - 1]
                 ).astype(int)
 
+                # Computing the Recovered compartments by age groups.
+                self.epidemiological_data[state]["Recovered_5-17"].iloc[i] = (
+                    self.epidemiological_data[state]["Recovered_5-17"].iloc[i - 1]
+                    + self.epidemiological_data[state]["New Recoveries"].iloc[i]
+                    * self.cases_by_age_vaccination["5-17_Multiplier"].iloc[i]
+                ).astype(int)
+                self.epidemiological_data[state]["Recovered_18-49"].iloc[i] = (
+                    self.epidemiological_data[state]["Recovered_18-49"].iloc[i - 1]
+                    + self.epidemiological_data[state]["New Recoveries"].iloc[i]
+                    * self.cases_by_age_vaccination["18-49_Multiplier"].iloc[i]
+                ).astype(int)
+                self.epidemiological_data[state]["Recovered_50-64"].iloc[i] = (
+                    self.epidemiological_data[state]["Recovered_50-64"].iloc[i - 1]
+                    + self.epidemiological_data[state]["New Recoveries"].iloc[i]
+                    * self.cases_by_age_vaccination["50-64_Multiplier"].iloc[i]
+                ).astype(int)
+                self.epidemiological_data[state]["Recovered_65+"].iloc[i] = (
+                    self.epidemiological_data[state]["Recovered_65+"].iloc[i - 1]
+                    + self.epidemiological_data[state]["New Recoveries"].iloc[i]
+                    * self.cases_by_age_vaccination["65+_Multiplier"].iloc[i]
+                ).astype(int)
+
+            for vaccination_group in vaccination_groups:
+                for age_group in age_groups:
+                    self.epidemiological_data[state][
+                        f"Recovered_{age_group}_{vaccination_group}"
+                    ] = (
+                        # self.epidemiological_data[state][
+                        #     f"Recovered_{vaccination_group}"
+                        # ]
+                        self.epidemiological_data[state][f"Recovered_{age_group}"]
+                        * self.cases_by_age_vaccination[
+                            f"{age_group}_{vaccination_group}_Multiplier"
+                        ]
+                    ).astype(
+                        int
+                    )
+
             # Deceased compartments.
+            # Computing the Deceased compartment values by vaccination groups.
             initial_deceased_skew = (
                 self.epidemiological_data[state]["Total Deaths (Linear)"].iloc[0]
                 * self.deaths_by_age_vaccination["UV_Multiplier"].iloc[0]
@@ -538,6 +676,90 @@ class EpidemiologicalDataPreProcessing:
             cdc_skew = cdc_skew.cumsum()
             cdc_skew = cdc_skew + initial_deceased_skew
             self.epidemiological_data[state]["Deceased_BiV"] = cdc_skew
+
+            # Computing the Deceased compartment values by age groups.
+            initial_deceased_skew = (
+                self.epidemiological_data[state]["Total Deaths (Linear)"].iloc[0]
+                * self.deaths_by_age_vaccination["5-17_Multiplier"].iloc[0]
+            ).astype(int)
+            cdc_skew = (
+                self.epidemiological_data[state]["Daily Deaths"]
+                * self.deaths_by_age_vaccination["5-17_Multiplier"]
+            ).astype(int)
+            cdc_skew[0] = 0
+            cdc_skew = cdc_skew.cumsum()
+            cdc_skew = cdc_skew + initial_deceased_skew
+            self.epidemiological_data[state]["Deceased_5-17"] = cdc_skew
+            self.epidemiological_data[state]["Deceased_5-17"].replace(
+                0, method="ffill", inplace=True
+            )
+
+            initial_deceased_skew = (
+                self.epidemiological_data[state]["Total Deaths (Linear)"].iloc[0]
+                * self.deaths_by_age_vaccination["18-49_Multiplier"].iloc[0]
+            ).astype(int)
+            cdc_skew = (
+                self.epidemiological_data[state]["Daily Deaths"]
+                * self.deaths_by_age_vaccination["18-49_Multiplier"]
+            ).astype(int)
+            cdc_skew[0] = 0
+            cdc_skew = cdc_skew.cumsum()
+            cdc_skew = cdc_skew + initial_deceased_skew
+            self.epidemiological_data[state]["Deceased_18-49"] = cdc_skew
+            self.epidemiological_data[state]["Deceased_18-49"].replace(
+                0, method="ffill", inplace=True
+            )
+
+            initial_deceased_skew = (
+                self.epidemiological_data[state]["Total Deaths (Linear)"].iloc[0]
+                * self.deaths_by_age_vaccination["50-64_Multiplier"].iloc[0]
+            ).astype(int)
+            cdc_skew = (
+                self.epidemiological_data[state]["Daily Deaths"]
+                * self.deaths_by_age_vaccination["50-64_Multiplier"]
+            ).astype(int)
+            cdc_skew[0] = 0
+            cdc_skew = cdc_skew.cumsum()
+            cdc_skew = cdc_skew + initial_deceased_skew
+            self.epidemiological_data[state]["Deceased_50-64"] = cdc_skew
+            self.epidemiological_data[state]["Deceased_50-64"].replace(
+                0, method="ffill", inplace=True
+            )
+
+            initial_deceased_skew = (
+                self.epidemiological_data[state]["Total Deaths (Linear)"].iloc[0]
+                * self.deaths_by_age_vaccination["65+_Multiplier"].iloc[0]
+            ).astype(int)
+            cdc_skew = (
+                self.epidemiological_data[state]["Daily Deaths"]
+                * self.deaths_by_age_vaccination["65+_Multiplier"]
+            ).astype(int)
+            cdc_skew[0] = 0
+            cdc_skew = cdc_skew.cumsum()
+            cdc_skew = cdc_skew + initial_deceased_skew
+            self.epidemiological_data[state]["Deceased_65+"] = cdc_skew
+            self.epidemiological_data[state]["Deceased_65+"].replace(
+                0, method="ffill", inplace=True
+            )
+
+            for vaccination_group in vaccination_groups:
+                for age_group in age_groups:
+                    self.epidemiological_data[state][
+                        f"Deceased_{age_group}_{vaccination_group}"
+                    ] = (
+                        # self.epidemiological_data[state][
+                        #     f"Deceased_{vaccination_group}"
+                        # ]
+                        self.epidemiological_data[state][f"Deceased_{age_group}"]
+                        * self.deaths_by_age_vaccination[
+                            f"{age_group}_{vaccination_group}_Multiplier"
+                        ]
+                    ).astype(
+                        int
+                    )
+                    self.epidemiological_data[state][
+                        f"Deceased_{age_group}_{vaccination_group}"
+                    ].replace(0, method="ffill", inplace=True)
 
             # Accounting for "missing individuals".
             missing_individuals_unvaccinated = self.epidemiological_data[state][
@@ -616,29 +838,108 @@ class EpidemiologicalDataPreProcessing:
                 / total_missing_individuals_vaccination
             ).astype(int)
 
-            # Adjusting Exposed
-            self.epidemiological_data[state]["Exposed_UV"] = (
-                self.epidemiological_data[state]["Exposed"]
-                * missing_individuals_unvaccinated
-                / total_missing_individuals_vaccination
-            ).astype(int)
+            for vaccination_group in vaccination_groups:
+                for age_group in age_groups:
+                    self.epidemiological_data[state][
+                        f"Susceptible_{age_group}_{vaccination_group}"
+                    ] = (
+                        self.epidemiological_data[state][
+                            f"Susceptible_{vaccination_group}"
+                        ]
+                        * (
+                            self.cases_by_age_vaccination[f"{age_group}_Population"]
+                            / (
+                                self.cases_by_age_vaccination["5-17_Population"]
+                                + self.cases_by_age_vaccination["18-49_Population"]
+                                + self.cases_by_age_vaccination["50-64_Population"]
+                                + self.cases_by_age_vaccination["65+_Population"]
+                            )
+                        )
+                    ).astype(
+                        int
+                    )
 
-            self.epidemiological_data[state]["Exposed_V"] = (
-                self.epidemiological_data[state]["Exposed"]
-                * missing_individuals_vaccinated
-                / total_missing_individuals_vaccination
-            ).astype(int)
+            # # Adjusting Exposed
+            # self.epidemiological_data[state]["Exposed_UV"] = (
+            #     self.epidemiological_data[state]["Exposed"]
+            #     * missing_individuals_unvaccinated
+            #     / total_missing_individuals_vaccination
+            # ).astype(int)
+            #
+            # self.epidemiological_data[state]["Exposed_V"] = (
+            #     self.epidemiological_data[state]["Exposed"]
+            #     * missing_individuals_vaccinated
+            #     / total_missing_individuals_vaccination
+            # ).astype(int)
+            #
+            # self.epidemiological_data[state]["Exposed_BiV"] = (
+            #     self.epidemiological_data[state]["Exposed"]
+            #     * missing_individuals_bivalent_booster_vaccinated
+            #     / total_missing_individuals_vaccination
+            # ).astype(int)
 
-            self.epidemiological_data[state]["Exposed_BiV"] = (
-                self.epidemiological_data[state]["Exposed"]
-                * missing_individuals_bivalent_booster_vaccinated
-                / total_missing_individuals_vaccination
+            # for vaccination_group in vaccination_groups:
+            #     for age_group in age_groups:
+            #         self.epidemiological_data[state][
+            #             f"Exposed_{age_group}_{vaccination_group}"
+            #         ] = (
+            #             self.epidemiological_data[state][f"Exposed_{vaccination_group}"]
+            #             * (
+            #                 self.cases_by_age_vaccination[f"{age_group}_Population"]
+            #                 / (
+            #                     self.cases_by_age_vaccination["5-17_Population"]
+            #                     + self.cases_by_age_vaccination["18-49_Population"]
+            #                     + self.cases_by_age_vaccination["50-64_Population"]
+            #                     + self.cases_by_age_vaccination["65+_Population"]
+            #                 )
+            #             )
+            #         ).astype(
+            #             int
+            #         )
+
+            # Detected
+            cdc_skew = (
+                self.epidemiological_data[state]["new_positive_tests"]
+                * (self.cases_by_age_vaccination["UV_Multiplier"])
             ).astype(int)
+            self.epidemiological_data[state]["Detected_UV"] = cdc_skew
+
+            cdc_skew = (
+                self.epidemiological_data[state]["new_positive_tests"]
+                * (self.cases_by_age_vaccination["V_Multiplier"])
+            ).astype(int)
+            self.epidemiological_data[state]["Detected_V"] = cdc_skew
+
+            cdc_skew = (
+                self.epidemiological_data[state]["new_positive_tests"]
+                * (self.cases_by_age_vaccination["BiV_Multiplier"])
+            ).astype(int)
+            self.epidemiological_data[state]["Detected_BiV"] = cdc_skew
+
+            for vaccination_group in vaccination_groups:
+                for age_group in age_groups:
+                    self.epidemiological_data[state][
+                        f"Detected_{age_group}_{vaccination_group}"
+                    ] = (
+                        self.epidemiological_data[state]["new_positive_tests"]
+                        * (self.cases_by_age_vaccination[f"{age_group}_Multiplier"])
+                        * self.cases_by_age_vaccination[
+                            f"{age_group}_{vaccination_group}_Multiplier"
+                        ]
+                    ).astype(
+                        int
+                    )
+
+            self.epidemiological_data[state]["Detected"] = (
+                    self.epidemiological_data[state]["Detected_UV"]
+                    + self.epidemiological_data[state]["Detected_V"]
+                    + self.epidemiological_data[state]["Detected_BiV"]
+            )
 
             # Computing the total by vaccination statues across the different compartments.
             self.epidemiological_data[state]["unvaccinated_compartment_total"] = (
                 self.epidemiological_data[state]["Susceptible_UV"]
-                + self.epidemiological_data[state]["Exposed_UV"]
+                # + self.epidemiological_data[state]["Exposed_UV"]
                 + self.epidemiological_data[state]["Infected_UV"]
                 + self.epidemiological_data[state]["Hospitalized_UV"]
                 + self.epidemiological_data[state]["Recovered_UV"]
@@ -647,7 +948,7 @@ class EpidemiologicalDataPreProcessing:
 
             self.epidemiological_data[state]["vaccinated_compartment_total"] = (
                 self.epidemiological_data[state]["Susceptible_V"]
-                + self.epidemiological_data[state]["Exposed_V"]
+                # + self.epidemiological_data[state]["Exposed_V"]
                 + self.epidemiological_data[state]["Infected_V"]
                 + self.epidemiological_data[state]["Hospitalized_V"]
                 + self.epidemiological_data[state]["Recovered_V"]
@@ -658,7 +959,7 @@ class EpidemiologicalDataPreProcessing:
                 "bivalent_booster_vaccinated_compartment_total"
             ] = (
                 self.epidemiological_data[state]["Susceptible_BiV"]
-                + self.epidemiological_data[state]["Exposed_BiV"]
+                # + self.epidemiological_data[state]["Exposed_BiV"]
                 + self.epidemiological_data[state]["Infected_BiV"]
                 + self.epidemiological_data[state]["Hospitalized_BiV"]
                 + self.epidemiological_data[state]["Recovered_BiV"]
@@ -669,6 +970,40 @@ class EpidemiologicalDataPreProcessing:
                 self.epidemiological_data[state]["Active Cases"]
                 - self.epidemiological_data[state]["inpatient_beds_used_covid"]
             )
+
+            columns_to_add = []
+            compartments = [
+                "Susceptible",
+                # "Exposed",
+                "Infected",
+                "Hospitalized",
+                "Recovered",
+                "Deceased",
+                "Detected"
+            ]
+            test_and_mobility_columns = [
+                "new_tests",
+                "total_tests",
+                "new_negative_tests",
+                "total_negative_tests",
+                "new_positive_tests",
+                "total_positive_tests",
+                "new_inconclusive_tests",
+                "total_inconclusive_tests",
+                "retail_and_recreation_percent_change_from_baseline",
+                "grocery_and_pharmacy_percent_change_from_baseline",
+                "parks_percent_change_from_baseline",
+                "transit_stations_percent_change_from_baseline",
+                "workplaces_percent_change_from_baseline",
+                "residential_percent_change_from_baseline",
+            ]
+
+            for compartment in compartments:
+                for age_group in age_groups:
+                    for vaccination_group in vaccination_groups:
+                        columns_to_add.append(
+                            f"{compartment}_{age_group}_{vaccination_group}"
+                        )
 
             # Saving the epidemiological model data.
             self.epidemiological_data[state].iloc[:].to_csv(
@@ -686,21 +1021,22 @@ class EpidemiologicalDataPreProcessing:
                     "percentage_vaccinated_to_bivalent_vaccinated",
                     "Daily Cases",
                     "Susceptible",
-                    "Exposed",
+                    # "Exposed",
                     "Infected",
                     "Hospitalized",
                     "Recovered",
                     "Deceased",
-                    "Original Infected",
-                    "inpatient_beds_used_covid",
-                    "Total Recovered",
-                    "Total Deaths (Linear)",
+                    "Detected",
+                    # "Original Infected",
+                    # "inpatient_beds_used_covid",
+                    # "Total Recovered",
+                    # "Total Deaths (Linear)",
                     "Susceptible_UV",
                     "Susceptible_V",
                     "Susceptible_BiV",
-                    "Exposed_UV",
-                    "Exposed_V",
-                    "Exposed_BiV",
+                    # "Exposed_UV",
+                    # "Exposed_V",
+                    # "Exposed_BiV",
                     "Infected_UV",
                     "Infected_V",
                     "Infected_BiV",
@@ -713,7 +1049,11 @@ class EpidemiologicalDataPreProcessing:
                     "Deceased_UV",
                     "Deceased_V",
                     "Deceased_BiV",
-                ],
+                    "Detected_UV",
+                    "Detected_V",
+                    "Detected_BiV",
+                ]
+                + columns_to_add + test_and_mobility_columns,
             )
 
 

@@ -700,30 +700,34 @@ class EpidemiologicalModelParameterComputer:
             # plt.show()
 
 
+epidemiological_compartments = []
+age_groups = ["5-17", "18-49", "50-64", "65+"]
+vaccination_groups = ["UV", "V", "BiV"]
+compartments = [
+    "Susceptible",
+    "Infected",
+    "Hospitalized",
+    "Recovered",
+    "Deceased",
+    "Detected",
+]
+
+for compartment in compartments:
+    for vaccination_group in vaccination_groups:
+        epidemiological_compartments.append(f"{compartment}_{vaccination_group}")
+
+for compartment in compartments:
+    for age_group in age_groups:
+        for vaccination_group in vaccination_groups:
+            epidemiological_compartments.append(
+                f"{compartment}_{age_group}_{vaccination_group}"
+            )
+
 epidemiological_model_parameter_computer_configuration = {
     "data_path": f"{data_directory}/epidemiological_model_data/",
     "output_path": f"{data_directory}/epidemiological_model_parameters/",
     "simulation_start_date": "11/01/2021",
-    "epidemiological_compartment_names": [
-        "Susceptible_UV",
-        "Susceptible_FV",
-        "Susceptible_BV",
-        "Exposed_UV",
-        "Exposed_FV",
-        "Exposed_BV",
-        "Infected_UV",
-        "Infected_FV",
-        "Infected_BV",
-        "Hospitalized_UV",
-        "Hospitalized_FV",
-        "Hospitalized_BV",
-        "Recovered_UV",
-        "Recovered_FV",
-        "Recovered_BV",
-        "Deceased_UV",
-        "Deceased_FV",
-        "Deceased_BV",
-    ],
+    "epidemiological_compartment_names": epidemiological_compartments,
     "parameter_computation_timeframe": 28,
     "constrained_beta": False,
     "integration_method": "RK45",
@@ -736,4 +740,4 @@ epidemiological_model_parameter_computer = EpidemiologicalModelParameterComputer
     parameter_computer_configuration=epidemiological_model_parameter_computer_configuration
 )
 
-epidemiological_model_parameter_computer.compute_epidemiological_model_parameters()
+# epidemiological_model_parameter_computer.compute_epidemiological_model_parameters()
