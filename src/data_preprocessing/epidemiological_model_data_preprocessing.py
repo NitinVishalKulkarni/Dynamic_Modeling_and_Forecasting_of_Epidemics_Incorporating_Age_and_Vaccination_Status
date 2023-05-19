@@ -292,10 +292,6 @@ class EpidemiologicalDataPreProcessing:
             # Vaccination compartments.
             # self.epidemiological_data[state]["unvaccinated_individuals"] = (
             #     self.state_populations[state]
-            #     - self.epidemiological_data[state]["Administered_Dose1_Recip"]
-            # )
-            # self.epidemiological_data[state]["unvaccinated_individuals"] = (
-            #     self.state_populations[state]
             #     - self.epidemiological_data[state]["Series_Complete_Yes"]
             # )
 
@@ -931,9 +927,9 @@ class EpidemiologicalDataPreProcessing:
                     )
 
             self.epidemiological_data[state]["Detected"] = (
-                    self.epidemiological_data[state]["Detected_UV"]
-                    + self.epidemiological_data[state]["Detected_V"]
-                    + self.epidemiological_data[state]["Detected_BiV"]
+                self.epidemiological_data[state]["Detected_UV"]
+                + self.epidemiological_data[state]["Detected_V"]
+                + self.epidemiological_data[state]["Detected_BiV"]
             )
 
             # Computing the total by vaccination statues across the different compartments.
@@ -979,7 +975,7 @@ class EpidemiologicalDataPreProcessing:
                 "Hospitalized",
                 "Recovered",
                 "Deceased",
-                "Detected"
+                "Detected",
             ]
             test_and_mobility_columns = [
                 "new_tests",
@@ -1053,7 +1049,8 @@ class EpidemiologicalDataPreProcessing:
                     "Detected_V",
                     "Detected_BiV",
                 ]
-                + columns_to_add + test_and_mobility_columns,
+                + columns_to_add
+                + test_and_mobility_columns,
             )
 
 
