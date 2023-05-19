@@ -3,6 +3,8 @@ import json
 import os
 from collections import defaultdict
 from time import time
+import multiprocessing
+from multiprocessing import Pool
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -54,188 +56,199 @@ class EpidemiologicalModelParameterComputer:
 
         self.original_residual = None
 
-    def compute_epidemiological_model_parameters(self):
+    def compute_epidemiological_model_parameters(self, state):
         """This method computes the epidemiological model parameters and saves them..."""
 
         parameter_computation_timeframe = self.parameter_computer_configuration[
             "parameter_computation_timeframe"
         ]
 
-        for state in self.epidemiological_model_data:
-            print("\nState:", state)
+        # for state in self.epidemiological_model_data:
+        # def multi_threaded_parameter_computation(state):
+        print("\nState:", state)
 
-            # Starts with a blank file if file exists with previously computed epidemiological model parameters.
-            with open(
-                f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
-                "w",
-            ) as outfile:
-                outfile.close()
+        # Starts with a blank file if file exists with previously computed epidemiological model parameters.
+        with open(
+            f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
+            "w",
+        ) as outfile:
+            outfile.close()
 
-            state_runtime_start = time()
+        state_runtime_start = time()
 
-            model_predictions = []
-            original_residuals = []
-            total_residual = 0
-            state_parameters = defaultdict(list)
+        model_predictions = []
+        original_residuals = []
+        total_residual = 0
+        state_parameters = defaultdict(list)
 
-            # We compute the epidemiological model parameters every fixed number of days determined by
-            # (parameter_computation_timeframe).
-            number_of_splits = int(
-                np.ceil(
-                    self.epidemiological_model_data[state].shape[0]
-                    / parameter_computation_timeframe
+        # We compute the epidemiological model parameters every fixed number of days determined by
+        # (parameter_computation_timeframe).
+        number_of_splits = int(
+            np.ceil(
+                self.epidemiological_model_data[state].shape[0]
+                / parameter_computation_timeframe
+            )
+        )
+
+        for split_number in range(number_of_splits):
+            print(f"\nSplit {split_number + 1} of {number_of_splits}:")
+
+            split_min_index = split_number * parameter_computation_timeframe
+            split_max_index = min(
+                (split_number + 1) * parameter_computation_timeframe,
+                self.epidemiological_model_data[state].shape[0],
+            )
+
+            split_epidemiological_data = self.epidemiological_model_data[
+                state
+            ].iloc[split_min_index:split_max_index]
+
+            epidemiological_model_compartment_values = split_epidemiological_data[
+                self.epidemiological_compartment_names
+            ].values
+
+            # Times at which to store the computed solution. This also determines the interval of integration
+            # (t0, tf). The solver starts with t=t0 and integrates until it reaches t=tf.
+            t = np.linspace(
+                0,
+                split_epidemiological_data.shape[0] - 1,
+                split_epidemiological_data.shape[0],
+            )
+
+            # Initial values.
+            y0 = [
+                split_epidemiological_data[
+                    f"{self.epidemiological_compartment_names[i]}"
+                ].iloc[0]
+                for i in range(len(self.epidemiological_compartment_names))
+            ]
+
+            split_runtime_start = time()
+
+            # Note: Args are the additional positional arguments to be passed to self.residual_solve_ivp
+            model_fit_solve_ivp = minimize(
+                self.residual_solve_ivp,
+                self.epidemiological_model_parameters,
+                args=(
+                    t,
+                    epidemiological_model_compartment_values,
+                    self.parameter_computer_configuration["integration_method"],
+                    self.parameter_computer_configuration[
+                        "differential_equation_version"
+                    ],
+                    state,
+                    y0,
+                ),
+                method=self.parameter_computer_configuration["fitting_method"],
+                nan_policy=self.parameter_computer_configuration["nan_policy"],
+                max_nfev=self.parameter_computer_configuration[
+                    "maximum_number_of_function_evaluations"
+                ],
+            )
+
+            print("Split Runtime:", time() - split_runtime_start, "seconds")
+
+            model_prediction = (
+                epidemiological_model_compartment_values
+                + self.original_residual.reshape(
+                    epidemiological_model_compartment_values.shape
                 )
             )
 
-            for split_number in range(number_of_splits):
-                print(f"\nSplit {split_number + 1} of {number_of_splits}:")
+            model_predictions.append(model_prediction)
 
-                split_min_index = split_number * parameter_computation_timeframe
-                split_max_index = min(
-                    (split_number + 1) * parameter_computation_timeframe,
-                    self.epidemiological_model_data[state].shape[0],
-                )
+            original_residuals.append(self.original_residual)
 
-                split_epidemiological_data = self.epidemiological_model_data[
-                    state
-                ].iloc[split_min_index:split_max_index]
+            for name, parameter in model_fit_solve_ivp.params.items():
+                state_parameters[f"{name}"].append(parameter.value)
 
-                epidemiological_model_compartment_values = split_epidemiological_data[
-                    self.epidemiological_compartment_names
-                ].values
+            # print(
+            #     "Split Residual:",
+            #     np.sum(np.abs(self.original_residual)),
+            # )
 
-                # Times at which to store the computed solution. This also determines the interval of integration
-                # (t0, tf). The solver starts with t=t0 and integrates until it reaches t=tf.
-                t = np.linspace(
-                    0,
-                    split_epidemiological_data.shape[0] - 1,
-                    split_epidemiological_data.shape[0],
-                )
-
-                # Initial values.
-                y0 = [
-                    split_epidemiological_data[
-                        f"{self.epidemiological_compartment_names[i]}"
-                    ].iloc[0]
-                    for i in range(len(self.epidemiological_compartment_names))
-                ]
-
-                split_runtime_start = time()
-
-                # Note: Args are the additional positional arguments to be passed to self.residual_solve_ivp
-                model_fit_solve_ivp = minimize(
-                    self.residual_solve_ivp,
-                    self.epidemiological_model_parameters,
-                    args=(
-                        t,
-                        epidemiological_model_compartment_values,
-                        self.parameter_computer_configuration["integration_method"],
-                        self.parameter_computer_configuration[
-                            "differential_equation_version"
-                        ],
-                        state,
-                        y0,
-                    ),
-                    method=self.parameter_computer_configuration["fitting_method"],
-                    nan_policy=self.parameter_computer_configuration["nan_policy"],
-                )
-
-                print("Split Runtime:", time() - split_runtime_start, "seconds")
-
-                model_prediction = (
-                    epidemiological_model_compartment_values
-                    + self.original_residual.reshape(
-                        epidemiological_model_compartment_values.shape
-                    )
-                )
-
-                model_predictions.append(model_prediction)
-
-                original_residuals.append(self.original_residual)
-
-                for name, parameter in model_fit_solve_ivp.params.items():
-                    state_parameters[f"{name}"].append(parameter.value)
-
-                # print(
-                #     "Split Residual:",
-                #     np.sum(np.abs(self.original_residual)),
-                # )
-
-                # print(
-                #     f"\n\nFit Report {split_number + 1}:\n",
-                #     fit_report(model_fit_solve_ivp),
-                # )
-                # print(f"\n\nParameters {split_number + 1}:")
-                # print(model_fit_solve_ivp.params.pretty_print(), "\n")
-                # print(
-                #     "-----------------------------------------------------------------------------------------------"
-                # )
-
-                with open(
-                    f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
-                    "a",
-                ) as outfile:
-                    outfile.write(
-                        f"\n\nSplit {split_number + 1} of {number_of_splits}:"
-                    )
-                    outfile.write(
-                        f"\nSplit Runtime: {time() - split_runtime_start} seconds"
-                    )
-                    outfile.write(
-                        f"\nSplit Residual: {np.sum(np.abs(self.original_residual))}"
-                    )
-                    outfile.write(
-                        f"\n\nFit Report {split_number + 1}:\n {fit_report(model_fit_solve_ivp)}"
-                    )
-                    # outfile.write(f"\n\nParameters {split_number + 1}:")
-                    # outfile.write(f"{model_fit_solve_ivp.params.pretty_print()}, \n")
-                    outfile.write(
-                        "\n--------------------------------------------------------------------------------------------"
-                    )
-
-            total_residual += np.sum(np.abs(np.asarray(original_residuals[:-1])))
-
-            # print(f"\n\nTotal Residual {state}:", total_residual)
-            print(f"{state} Runtime:", time() - state_runtime_start, "seconds\n")
+            # print(
+            #     f"\n\nFit Report {split_number + 1}:\n",
+            #     fit_report(model_fit_solve_ivp),
+            # )
+            # print(f"\n\nParameters {split_number + 1}:")
+            # print(model_fit_solve_ivp.params.pretty_print(), "\n")
+            # print(
+            #     "-----------------------------------------------------------------------------------------------"
+            # )
 
             with open(
                 f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
                 "a",
             ) as outfile:
-                outfile.write(f"\n\nTotal Residual {state}: {total_residual}")
+                outfile.write(
+                    f"\n\nSplit {split_number + 1} of {number_of_splits}:"
+                )
+                outfile.write(
+                    f"\nSplit Runtime: {time() - split_runtime_start} seconds"
+                )
+                outfile.write(
+                    f"\nSplit Residual: {np.sum(np.abs(self.original_residual))}"
+                )
+                outfile.write(
+                    f"\n\nFit Report {split_number + 1}:\n {fit_report(model_fit_solve_ivp)}"
+                )
+                # outfile.write(f"\n\nParameters {split_number + 1}:")
+                # outfile.write(f"{model_fit_solve_ivp.params.pretty_print()}, \n")
+                outfile.write(
+                    "\n--------------------------------------------------------------------------------------------"
+                )
 
-            # for parameter in state_parameters.keys():
-            #     print(f"{parameter}:", state_parameters[parameter])
+        total_residual += np.sum(np.abs(np.asarray(original_residuals[:-1])))
 
-            with open(
-                f"{data_directory}/epidemiological_model_parameters/{state}.json", "w"
-            ) as outfile:
-                json.dump(state_parameters, outfile)
+        # print(f"\n\nTotal Residual {state}:", total_residual)
+        print(f"{state} Runtime:", time() - state_runtime_start, "seconds\n")
 
-            model_predictions = np.concatenate(
-                [model_predictions[i] for i in range(len(model_predictions))]
-            )
+        with open(
+            f"{data_directory}/epidemiological_model_parameters/goodness_of_fit/{state}.txt",
+            "a",
+        ) as outfile:
+            outfile.write(f"\n\nTotal Residual {state}: {total_residual}")
 
-            # Saving the model predictions.
-            date_values = self.epidemiological_model_data[state]["date"].values.reshape(
-                -1, 1
-            )
-            data = np.concatenate((date_values, model_predictions), axis=1)
-            model_predictions_dataframe = pd.DataFrame(
-                data, columns=[["date"] + self.epidemiological_compartment_names]
-            )
-            model_predictions_dataframe.to_csv(
-                f"{data_directory}/epidemiological_model_parameters/model_predictions/{state}.csv",
-                index=False,
-            )
+        # for parameter in state_parameters.keys():
+        #     print(f"{parameter}:", state_parameters[parameter])
 
-            self.plot(
-                state=state,
-                actual_values=self.epidemiological_model_data[state][
-                    self.epidemiological_compartment_names
-                ].values,
-                model_predictions=model_predictions,
-            )
+        with open(
+            f"{data_directory}/epidemiological_model_parameters/{state}.json", "w"
+        ) as outfile:
+            json.dump(state_parameters, outfile)
+
+        model_predictions = np.concatenate(
+            [model_predictions[i] for i in range(len(model_predictions))]
+        )
+
+        # Saving the model predictions.
+        date_values = self.epidemiological_model_data[state]["date"].values.reshape(
+            -1, 1
+        )
+        data = np.concatenate((date_values, model_predictions), axis=1)
+        model_predictions_dataframe = pd.DataFrame(
+            data, columns=[["date"] + self.epidemiological_compartment_names]
+        )
+        model_predictions_dataframe.to_csv(
+            f"{data_directory}/epidemiological_model_parameters/model_predictions/{state}.csv",
+            index=False,
+        )
+
+        self.plot(
+            state=state,
+            actual_values=self.epidemiological_model_data[state][
+                self.epidemiological_compartment_names
+            ].values,
+            model_predictions=model_predictions,
+        )
+
+        # print("CPU Count:", multiprocessing.cpu_count())
+        # # if __name__ == "__main__":
+        # pool = Pool(4)
+        # pool.map(
+        #     multi_threaded_parameter_computation, self.epidemiological_model_data
+        # )
 
     def differential_equations(
         self,
@@ -1337,43 +1350,50 @@ class EpidemiologicalModelParameterComputer:
             # plt.show()
 
 
-epidemiological_compartments = []
-age_groups = ["5-17", "18-49", "50-64", "65+"]
-vaccination_groups = ["UV", "V", "BiV"]
-compartments = [
-    "Susceptible",
-    "Infected",
-    "Hospitalized",
-    "Recovered",
-    "Deceased",
-    # "Detected",
-]
+if __name__ == "__main__":
+    epidemiological_compartments = []
+    age_groups = ["5-17", "18-49", "50-64", "65+"]
+    vaccination_groups = ["UV", "V", "BiV"]
+    compartments = [
+        "Susceptible",
+        "Infected",
+        "Hospitalized",
+        "Recovered",
+        "Deceased",
+        # "Detected",
+    ]
 
-for compartment in compartments:
-    for vaccination_group in vaccination_groups:
-        epidemiological_compartments.append(f"{compartment}_{vaccination_group}")
-
-for compartment in compartments:
-    for age_group in age_groups:
+    for compartment in compartments:
         for vaccination_group in vaccination_groups:
-            epidemiological_compartments.append(
-                f"{compartment}_{age_group}_{vaccination_group}"
-            )
+            epidemiological_compartments.append(f"{compartment}_{vaccination_group}")
 
-epidemiological_model_parameter_computer_configuration = {
-    "data_path": f"{data_directory}/epidemiological_model_data/",
-    "output_path": f"{data_directory}/epidemiological_model_parameters/",
-    "simulation_start_date": "11/01/2021",
-    "epidemiological_compartment_names": epidemiological_compartments,
-    "parameter_computation_timeframe": 28,
-    "constrained_beta": False,
-    "integration_method": "RK45",
-    "differential_equation_version": 1,
-    "fitting_method": "leastsq",
-    "nan_policy": "omit",
-}
+    for compartment in compartments:
+        for age_group in age_groups:
+            for vaccination_group in vaccination_groups:
+                epidemiological_compartments.append(
+                    f"{compartment}_{age_group}_{vaccination_group}"
+                )
 
-epidemiological_model_parameter_computer = EpidemiologicalModelParameterComputer(
-    parameter_computer_configuration=epidemiological_model_parameter_computer_configuration
-)
-epidemiological_model_parameter_computer.compute_epidemiological_model_parameters()
+    epidemiological_model_parameter_computer_configuration = {
+        "data_path": f"{data_directory}/epidemiological_model_data/",
+        "output_path": f"{data_directory}/epidemiological_model_parameters/",
+        "simulation_start_date": "11/01/2021",
+        "epidemiological_compartment_names": epidemiological_compartments,
+        "parameter_computation_timeframe": 28,
+        "constrained_beta": False,
+        "integration_method": "RK45",
+        "differential_equation_version": 1,
+        "fitting_method": "leastsq",
+        "nan_policy": "omit",
+        "maximum_number_of_function_evaluations": 10_000,
+    }
+
+    epidemiological_model_parameter_computer = EpidemiologicalModelParameterComputer(
+        parameter_computer_configuration=epidemiological_model_parameter_computer_configuration
+    )
+    # epidemiological_model_parameter_computer.compute_epidemiological_model_parameters()
+
+    print("CPU Count:", multiprocessing.cpu_count())
+    pool = Pool(24)
+    pool.map(epidemiological_model_parameter_computer.compute_epidemiological_model_parameters,
+             epidemiological_model_parameter_computer.epidemiological_model_data)
