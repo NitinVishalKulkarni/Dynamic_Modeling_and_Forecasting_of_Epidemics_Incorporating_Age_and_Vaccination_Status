@@ -507,6 +507,24 @@ class ParameterInitializer:
         parameters.add("beta_65_plus_rv", value=0.004, min=0, max=10)
         parameters.add("beta_65_plus_rbiv", value=0.004, min=0, max=10)
 
+        # # Testing parameter
+        # parameters.add("new_tests_param", value=0.02, min=0, max=1)
+        # parameters.add("new_positive_tests_param", value=0.02, min=0, max=1)
+
+        # Mobility parameter
+        parameters.add("mobility_param", value=0.00, min=0, max=1)
+        parameters.add(
+            "retail_and_recreation_mobility_param", value=0.00, min=-1, max=1
+        )
+        parameters.add("grocery_and_pharmacy_mobility_param", value=0.00, min=-1, max=1)
+        parameters.add("parks_mobility_param", value=0.00, min=-1, max=1)
+        parameters.add("transit_stations_mobility_param", value=0.00, min=-1, max=1)
+        parameters.add("workplaces_mobility_param", value=0.00, min=-1, max=1)
+        parameters.add("residential_mobility_param", value=0.00, min=-1, max=1)
+
+        # Quarantine parameter
+        # parameters.add("quarantine_param", value=0.00, min=0, max=1)
+
         # Hospitalization rates for infected individuals.
         parameters.add("delta_uv", value=0.00216666, min=0.0, max=0.00444444)
         parameters.add("delta_v", value=0.000516666, min=0.0, max=0.00444444)
