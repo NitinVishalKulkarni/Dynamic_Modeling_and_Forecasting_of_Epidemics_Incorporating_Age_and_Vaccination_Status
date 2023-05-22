@@ -1,9 +1,11 @@
-import pandas as pd
-from src.settings import data_directory
 import json
-from pathlib import Path
 import os
+from pathlib import Path
+
+import pandas as pd
 from lmfit import Parameters
+
+from src.settings import data_directory
 
 
 class ParameterInitializer:
@@ -29,9 +31,7 @@ class ParameterInitializer:
         """This method initializes the epidemiological model data."""
 
         for state_name in self.states:
-            self.epidemiological_model_data[state_name] = pd.read_csv(
-                f"{self.data_path}/{state_name}.csv"
-            )
+            self.epidemiological_model_data[state_name] = pd.read_csv(f"{self.data_path}/{state_name}.csv")
 
         return self.epidemiological_model_data
 
@@ -449,7 +449,7 @@ class ParameterInitializer:
 
     @staticmethod
     def initialize_initial_epidemiological_model_parameters(
-        constrained_beta=True,
+            constrained_beta=True,
     ):
         """This method initializes the initial epidemiological model parameter values for the epidemiological model
         parameter computer.
@@ -508,19 +508,19 @@ class ParameterInitializer:
         parameters.add("beta_65_plus_rbiv", value=0.004, min=0, max=10)
 
         # # Testing parameter
-        # parameters.add("new_tests_param", value=0.02, min=0, max=1)
+        # parameters.add("new_tests_param", value=0.5, min=0, max=1)
         # parameters.add("new_positive_tests_param", value=0.02, min=0, max=1)
 
         # Mobility parameter
-        parameters.add("mobility_param", value=0.00, min=0, max=1)
-        parameters.add(
-            "retail_and_recreation_mobility_param", value=0.00, min=-1, max=1
-        )
-        parameters.add("grocery_and_pharmacy_mobility_param", value=0.00, min=-1, max=1)
-        parameters.add("parks_mobility_param", value=0.00, min=-1, max=1)
-        parameters.add("transit_stations_mobility_param", value=0.00, min=-1, max=1)
-        parameters.add("workplaces_mobility_param", value=0.00, min=-1, max=1)
-        parameters.add("residential_mobility_param", value=0.00, min=-1, max=1)
+        # parameters.add("mobility_param", value=0.5, min=-1, max=1)
+        # parameters.add(
+        #     "retail_and_recreation_mobility_param", value=0.5, min=-1, max=1
+        # )
+        # parameters.add("grocery_and_pharmacy_mobility_param", value=0.50, min=-1, max=1)
+        # parameters.add("parks_mobility_param", value=0.50, min=-1, max=1)
+        # parameters.add("transit_stations_mobility_param", value=0.50, min=-1, max=1)
+        # parameters.add("workplaces_mobility_param", value=0.50, min=-1, max=1)
+        # parameters.add("residential_mobility_param", value=0.50, min=-1, max=1)
 
         # Quarantine parameter
         # parameters.add("quarantine_param", value=0.00, min=0, max=1)

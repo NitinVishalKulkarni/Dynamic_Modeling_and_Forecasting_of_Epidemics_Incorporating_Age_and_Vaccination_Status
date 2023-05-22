@@ -182,23 +182,23 @@ class EpidemiologicalDataPreProcessing:
                         0 if (uv + v + biv) == 0 else biv / (uv + v + biv)
                     )
 
-        print(
-            "Cases by Age and Vaccination First:\n",
-            self.cases_by_age_vaccination.head(),
-        )
-        print(
-            "\n\nCases by Age and Vaccination Last:\n",
-            self.cases_by_age_vaccination.iloc[-5:],
-        )
-
-        print(
-            "\n\nDeaths by Age and Vaccination First:\n",
-            self.deaths_by_age_vaccination.head(),
-        )
-        print(
-            "\n\nDeaths by Age and Vaccination Last:\n",
-            self.deaths_by_age_vaccination.iloc[-5:],
-        )
+        # print(
+        #     "Cases by Age and Vaccination First:\n",
+        #     self.cases_by_age_vaccination.head(),
+        # )
+        # print(
+        #     "\n\nCases by Age and Vaccination Last:\n",
+        #     self.cases_by_age_vaccination.iloc[-5:],
+        # )
+        #
+        # print(
+        #     "\n\nDeaths by Age and Vaccination First:\n",
+        #     self.deaths_by_age_vaccination.head(),
+        # )
+        # print(
+        #     "\n\nDeaths by Age and Vaccination Last:\n",
+        #     self.deaths_by_age_vaccination.iloc[-5:],
+        # )
 
         # Hospitalization Data
         self.hospitalizations_by_age_vaccination[
@@ -262,14 +262,14 @@ class EpidemiologicalDataPreProcessing:
                     f"{age_group}_BiV_Multiplier"
                 ].iloc[i] = biv
 
-        print(
-            "\n\nHospitalizations by Age and Vaccination First:\n",
-            self.hospitalizations_by_age_vaccination.head(),
-        )
-        print(
-            "\n\nHospitalizations by Age and Vaccination Last:\n",
-            self.hospitalizations_by_age_vaccination.iloc[-5:],
-        )
+        # print(
+        #     "\n\nHospitalizations by Age and Vaccination First:\n",
+        #     self.hospitalizations_by_age_vaccination.head(),
+        # )
+        # print(
+        #     "\n\nHospitalizations by Age and Vaccination Last:\n",
+        #     self.hospitalizations_by_age_vaccination.iloc[-5:],
+        # )
 
     def data_preprocessing(self):
         """This method pre-processes the data for the sub-compartments in the epidemiological model."""
@@ -993,6 +993,32 @@ class EpidemiologicalDataPreProcessing:
                 "workplaces_percent_change_from_baseline",
                 "residential_percent_change_from_baseline",
             ]
+
+            for i in range(560, len(self.epidemiological_data[state]) - 7, 7):
+                self.epidemiological_data[state].loc[i:i+6, ["retail_and_recreation_percent_change_from_baseline",
+                    "grocery_and_pharmacy_percent_change_from_baseline",
+                    "parks_percent_change_from_baseline",
+                    "transit_stations_percent_change_from_baseline",
+                    "workplaces_percent_change_from_baseline",
+                    "residential_percent_change_from_baseline"]] = self.epidemiological_data[state][["retail_and_recreation_percent_change_from_baseline",
+                    "grocery_and_pharmacy_percent_change_from_baseline",
+                    "parks_percent_change_from_baseline",
+                    "transit_stations_percent_change_from_baseline",
+                    "workplaces_percent_change_from_baseline",
+                    "residential_percent_change_from_baseline"]].iloc[553:560].values
+                # print(i)
+            self.epidemiological_data[state].loc[721:726, ["retail_and_recreation_percent_change_from_baseline",
+                                                           "grocery_and_pharmacy_percent_change_from_baseline",
+                                                           "parks_percent_change_from_baseline",
+                                                           "transit_stations_percent_change_from_baseline",
+                                                           "workplaces_percent_change_from_baseline",
+                                                           "residential_percent_change_from_baseline"]] = \
+            self.epidemiological_data[state][["retail_and_recreation_percent_change_from_baseline",
+                                              "grocery_and_pharmacy_percent_change_from_baseline",
+                                              "parks_percent_change_from_baseline",
+                                              "transit_stations_percent_change_from_baseline",
+                                              "workplaces_percent_change_from_baseline",
+                                              "residential_percent_change_from_baseline"]].iloc[553:559].values
 
             for compartment in compartments:
                 for age_group in age_groups:
