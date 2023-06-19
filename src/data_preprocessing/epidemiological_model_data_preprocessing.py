@@ -46,6 +46,8 @@ class EpidemiologicalDataPreProcessing:
             .reset_index(drop=True)
         )
 
+        self.usa_epidemiological_data = None
+
     def compute_age_group_and_vaccination_status_multipliers(self):
         """This method computes the age group and vaccination status wise multipliers for splitting the data."""
 
@@ -977,6 +979,33 @@ class EpidemiologicalDataPreProcessing:
                 "Deceased",
                 "Detected",
             ]
+
+            # Calculating the IFR:
+            for age_group in age_groups:
+                self.epidemiological_data[state][
+                    [
+                        f"IFR_{age_group}_UV",
+                        f"IFR_{age_group}_V",
+                        f"IFR_{age_group}_BiV",
+                    ]
+                ] = 0
+                columns_to_add.append(f"IFR_{age_group}_UV")
+                columns_to_add.append(f"IFR_{age_group}_V")
+                columns_to_add.append(f"IFR_{age_group}_BiV")
+
+            for age_group in age_groups:
+                for vaccination_group in vaccination_groups:
+                    self.epidemiological_data[state][
+                        f"IFR_{age_group}_{vaccination_group}"
+                    ] = (
+                        self.epidemiological_data[state][
+                            f"Deceased_{age_group}_{vaccination_group}"
+                        ]
+                        / self.epidemiological_data[state][
+                            f"Infected_{age_group}_{vaccination_group}"
+                        ].cumsum()
+                    )
+
             test_and_mobility_columns = [
                 "new_tests",
                 "total_tests",
@@ -995,30 +1024,55 @@ class EpidemiologicalDataPreProcessing:
             ]
 
             for i in range(560, len(self.epidemiological_data[state]) - 7, 7):
-                self.epidemiological_data[state].loc[i:i+6, ["retail_and_recreation_percent_change_from_baseline",
-                    "grocery_and_pharmacy_percent_change_from_baseline",
-                    "parks_percent_change_from_baseline",
-                    "transit_stations_percent_change_from_baseline",
-                    "workplaces_percent_change_from_baseline",
-                    "residential_percent_change_from_baseline"]] = self.epidemiological_data[state][["retail_and_recreation_percent_change_from_baseline",
-                    "grocery_and_pharmacy_percent_change_from_baseline",
-                    "parks_percent_change_from_baseline",
-                    "transit_stations_percent_change_from_baseline",
-                    "workplaces_percent_change_from_baseline",
-                    "residential_percent_change_from_baseline"]].iloc[553:560].values
+                self.epidemiological_data[state].loc[
+                    i : i + 6,
+                    [
+                        "retail_and_recreation_percent_change_from_baseline",
+                        "grocery_and_pharmacy_percent_change_from_baseline",
+                        "parks_percent_change_from_baseline",
+                        "transit_stations_percent_change_from_baseline",
+                        "workplaces_percent_change_from_baseline",
+                        "residential_percent_change_from_baseline",
+                    ],
+                ] = (
+                    self.epidemiological_data[state][
+                        [
+                            "retail_and_recreation_percent_change_from_baseline",
+                            "grocery_and_pharmacy_percent_change_from_baseline",
+                            "parks_percent_change_from_baseline",
+                            "transit_stations_percent_change_from_baseline",
+                            "workplaces_percent_change_from_baseline",
+                            "residential_percent_change_from_baseline",
+                        ]
+                    ]
+                    .iloc[553:560]
+                    .values
+                )
                 # print(i)
-            self.epidemiological_data[state].loc[721:726, ["retail_and_recreation_percent_change_from_baseline",
-                                                           "grocery_and_pharmacy_percent_change_from_baseline",
-                                                           "parks_percent_change_from_baseline",
-                                                           "transit_stations_percent_change_from_baseline",
-                                                           "workplaces_percent_change_from_baseline",
-                                                           "residential_percent_change_from_baseline"]] = \
-            self.epidemiological_data[state][["retail_and_recreation_percent_change_from_baseline",
-                                              "grocery_and_pharmacy_percent_change_from_baseline",
-                                              "parks_percent_change_from_baseline",
-                                              "transit_stations_percent_change_from_baseline",
-                                              "workplaces_percent_change_from_baseline",
-                                              "residential_percent_change_from_baseline"]].iloc[553:559].values
+            self.epidemiological_data[state].loc[
+                721:726,
+                [
+                    "retail_and_recreation_percent_change_from_baseline",
+                    "grocery_and_pharmacy_percent_change_from_baseline",
+                    "parks_percent_change_from_baseline",
+                    "transit_stations_percent_change_from_baseline",
+                    "workplaces_percent_change_from_baseline",
+                    "residential_percent_change_from_baseline",
+                ],
+            ] = (
+                self.epidemiological_data[state][
+                    [
+                        "retail_and_recreation_percent_change_from_baseline",
+                        "grocery_and_pharmacy_percent_change_from_baseline",
+                        "parks_percent_change_from_baseline",
+                        "transit_stations_percent_change_from_baseline",
+                        "workplaces_percent_change_from_baseline",
+                        "residential_percent_change_from_baseline",
+                    ]
+                ]
+                .iloc[553:559]
+                .values
+            )
 
             for compartment in compartments:
                 for age_group in age_groups:
@@ -1079,6 +1133,57 @@ class EpidemiologicalDataPreProcessing:
                 + test_and_mobility_columns,
             )
 
+    def create_usa_epidemiological_data(self):
+        age_groups = ["5-17", "18-49", "50-64", "65+"]
+        vaccination_groups = ["UV", "V", "BiV"]
+
+        for state in self.states:
+            state_epidemiological_model_data = pd.read_csv(
+                f"{data_directory}/epidemiological_model_data/{state}.csv"
+            )
+            if self.usa_epidemiological_data is None:
+                self.usa_epidemiological_data = state_epidemiological_model_data
+            else:
+                self.usa_epidemiological_data = self.usa_epidemiological_data.add(
+                    state_epidemiological_model_data
+                )
+                self.usa_epidemiological_data[
+                    "date"
+                ] = state_epidemiological_model_data["date"]
+
+        mean_columns = [
+            "percentage_unvaccinated_to_vaccinated",
+            "percentage_vaccinated_to_bivalent_vaccinated",
+            "retail_and_recreation_percent_change_from_baseline",
+            "grocery_and_pharmacy_percent_change_from_baseline",
+            "parks_percent_change_from_baseline",
+            "transit_stations_percent_change_from_baseline",
+            "workplaces_percent_change_from_baseline",
+            "residential_percent_change_from_baseline",
+        ]
+
+        self.usa_epidemiological_data[mean_columns] = self.usa_epidemiological_data[
+            mean_columns
+        ].div(50)
+
+        for age_group in age_groups:
+            for vaccination_group in vaccination_groups:
+                self.usa_epidemiological_data[
+                    f"IFR_{age_group}_{vaccination_group}"
+                ] = (
+                    self.usa_epidemiological_data[
+                        f"Deceased_{age_group}_{vaccination_group}"
+                    ]
+                    / self.usa_epidemiological_data[
+                        f"Infected_{age_group}_{vaccination_group}"
+                    ].cumsum()
+                )
+
+        self.usa_epidemiological_data.to_csv(
+            f"{data_directory}/epidemiological_model_data/usa.csv",
+            index=False,
+        )
+
 
 data__paths = {
     "processed_state_data": f"{data_directory}/processed_state_data/",
@@ -1091,5 +1196,6 @@ data__paths = {
 epidemiological_data_preprocessing = EpidemiologicalDataPreProcessing(
     data_paths=data__paths
 )
-epidemiological_data_preprocessing.compute_age_group_and_vaccination_status_multipliers()
-epidemiological_data_preprocessing.data_preprocessing()
+# epidemiological_data_preprocessing.compute_age_group_and_vaccination_status_multipliers()
+# epidemiological_data_preprocessing.data_preprocessing()
+epidemiological_data_preprocessing.create_usa_epidemiological_data()

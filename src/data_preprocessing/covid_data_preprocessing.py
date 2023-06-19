@@ -31,7 +31,7 @@ class DataPreprocessing:
         self.us_testing = pd.read_csv(data_paths["testing"])
         self.us_hospitalizations = pd.read_csv(data_paths["hospitalization"])
         self.us_vaccinations = pd.read_csv(data_paths["vaccination"])
-        # self.google_mobility_report = pd.read_csv(data_paths["google_mobility_report"])
+        self.google_mobility_report = pd.read_csv(data_paths["google_mobility_report"])
         self.cases_deaths_by_age_vaccination = pd.read_csv(
             data_paths["cases_deaths_by_age_vaccination"]
         )
